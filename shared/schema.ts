@@ -6,6 +6,8 @@ import {
   timestamp,
   varchar,
   text,
+  decimal,
+  integer,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -42,6 +44,31 @@ export const inquiries = pgTable("inquiries", {
   status: varchar("status", { length: 20 }).default("new"),
 });
 
+// Service types table
+export const serviceTypes = pgTable("service_types", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name", { length: 100 }).notNull(),
+  description: text("description"),
+  duration: integer("duration").notNull(), // minutes
+  price: decimal("price", { precision: 10, scale: 2 }),
+  isActive: varchar("is_active", { length: 10 }).default("active"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Appointments table
+export const appointments = pgTable("appointments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name", { length: 100 }).notNull(),
+  phone: varchar("phone", { length: 20 }).notNull(),
+  email: varchar("email", { length: 255 }),
+  serviceTypeId: varchar("service_type_id").references(() => serviceTypes.id),
+  appointmentDate: timestamp("appointment_date").notNull(),
+  notes: text("notes"),
+  status: varchar("status", { length: 20 }).default("pending"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Schema exports
 export const insertInquirySchema = createInsertSchema(inquiries).pick({
   name: true,
@@ -49,7 +76,27 @@ export const insertInquirySchema = createInsertSchema(inquiries).pick({
   inquiry: true,
 });
 
+export const insertServiceTypeSchema = createInsertSchema(serviceTypes).pick({
+  name: true,
+  description: true,
+  duration: true,
+  price: true,
+});
+
+export const insertAppointmentSchema = createInsertSchema(appointments).pick({
+  name: true,
+  phone: true,
+  email: true,
+  serviceTypeId: true,
+  appointmentDate: true,
+  notes: true,
+});
+
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
 export type InsertInquiry = z.infer<typeof insertInquirySchema>;
 export type Inquiry = typeof inquiries.$inferSelect;
+export type ServiceType = typeof serviceTypes.$inferSelect;
+export type InsertServiceType = z.infer<typeof insertServiceTypeSchema>;
+export type Appointment = typeof appointments.$inferSelect;
+export type InsertAppointment = z.infer<typeof insertAppointmentSchema>;

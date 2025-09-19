@@ -1,9 +1,32 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { MapPin, Train, Bus, Clock, Map } from "lucide-react";
+import { useEffect, useRef } from "react";
 
 export function LocationSection() {
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    const section = sectionRef.current;
+    if (section) {
+      const animatedElements = section.querySelectorAll('.animate-fade-in');
+      animatedElements.forEach((el) => observer.observe(el));
+    }
+
+    return () => observer.disconnect();
+  }, []);
   return (
-    <section className="py-20" data-testid="section-location">
+    <section ref={sectionRef} className="py-20" data-testid="section-location">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16 animate-fade-in">
           <h3 className="text-3xl md:text-4xl font-bold text-primary mb-4">

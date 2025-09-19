@@ -1,7 +1,30 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Sparkles, Leaf, Shield } from "lucide-react";
+import { useEffect, useRef } from "react";
 
 export function ServicesSection() {
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    const section = sectionRef.current;
+    if (section) {
+      const animatedElements = section.querySelectorAll('.animate-fade-in');
+      animatedElements.forEach((el) => observer.observe(el));
+    }
+
+    return () => observer.disconnect();
+  }, []);
   const services = [
     {
       icon: Sparkles,
@@ -21,7 +44,7 @@ export function ServicesSection() {
   ];
 
   return (
-    <section className="py-20 bg-secondary" data-testid="section-services">
+    <section ref={sectionRef} className="py-20 bg-secondary" data-testid="section-services">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16 animate-fade-in">
           <h3 className="text-3xl md:text-4xl font-bold text-primary mb-4">

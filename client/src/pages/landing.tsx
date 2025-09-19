@@ -1,6 +1,7 @@
 import { HeroSection } from "@/components/hero-section";
 import { ServicesSection } from "@/components/services-section";
 import { GallerySection } from "@/components/gallery-section";
+import { AppointmentBooking } from "@/components/appointment-booking";
 import { ContactForm } from "@/components/contact-form";
 import { LocationSection } from "@/components/location-section";
 import { useState } from "react";
@@ -21,12 +22,32 @@ export default function Landing() {
   };
 
   const openKakaoTalk = () => {
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+      // Try to open KakaoTalk app directly on mobile
+      const kakaoAppUrl = "kakaotalk://plusfriend/chat/_SeoulAntiAgingSkinClinic";
+      const fallbackUrl = "https://pf.kakao.com/_SeoulAntiAgingSkinClinic/chat";
+      
+      const openApp = () => {
+        window.location.href = kakaoAppUrl;
+        
+        // Fallback to web if app doesn't open
+        setTimeout(() => {
+          window.open(fallbackUrl, '_blank');
+        }, 1500);
+      };
+      
+      openApp();
+    } else {
+      // Desktop - open web version
+      window.open("https://pf.kakao.com/_SeoulAntiAgingSkinClinic/chat", '_blank');
+    }
+    
     toast({
       title: "카카오톡 상담",
-      description: "카카오톡 채널로 연결됩니다.",
+      description: isMobile ? "카카오톡 앱으로 연결됩니다." : "카카오톡 웹 채팅으로 연결됩니다.",
     });
-    // In production, replace with actual KakaoTalk channel URL
-    // window.open('https://pf.kakao.com/_your_channel_key', '_blank');
   };
 
   return (
@@ -59,6 +80,7 @@ export default function Landing() {
         <HeroSection onKakaoClick={openKakaoTalk} />
         <ServicesSection />
         <GallerySection />
+        <AppointmentBooking />
         <ContactForm />
         <LocationSection />
       </main>

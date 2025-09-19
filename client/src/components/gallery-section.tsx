@@ -1,6 +1,29 @@
 import { Card, CardContent } from "@/components/ui/card";
+import { useEffect, useRef } from "react";
 
 export function GallerySection() {
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    const section = sectionRef.current;
+    if (section) {
+      const animatedElements = section.querySelectorAll('.animate-fade-in');
+      animatedElements.forEach((el) => observer.observe(el));
+    }
+
+    return () => observer.disconnect();
+  }, []);
   const galleryItems = [
     {
       image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
@@ -30,7 +53,7 @@ export function GallerySection() {
   ];
 
   return (
-    <section className="py-20" data-testid="section-gallery">
+    <section ref={sectionRef} className="py-20" data-testid="section-gallery">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16 animate-fade-in">
           <h3 className="text-3xl md:text-4xl font-bold text-primary mb-4">

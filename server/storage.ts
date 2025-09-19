@@ -1,13 +1,19 @@
 import {
   users,
   inquiries,
+  serviceTypes,
+  appointments,
   type User,
   type UpsertUser,
   type Inquiry,
   type InsertInquiry,
+  type ServiceType,
+  type InsertServiceType,
+  type Appointment,
+  type InsertAppointment,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and, gte, lte } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (required for Replit Auth)
@@ -18,6 +24,16 @@ export interface IStorage {
   createInquiry(inquiry: InsertInquiry): Promise<Inquiry>;
   getAllInquiries(): Promise<Inquiry[]>;
   updateInquiryStatus(id: string, status: string): Promise<void>;
+  
+  // Service type operations
+  getAllServiceTypes(): Promise<ServiceType[]>;
+  createServiceType(serviceType: InsertServiceType): Promise<ServiceType>;
+  
+  // Appointment operations
+  createAppointment(appointment: InsertAppointment): Promise<Appointment>;
+  getAllAppointments(): Promise<Appointment[]>;
+  getAppointmentsByDate(date: string): Promise<Appointment[]>;
+  updateAppointmentStatus(id: string, status: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -63,6 +79,63 @@ export class DatabaseStorage implements IStorage {
       .update(inquiries)
       .set({ status })
       .where(eq(inquiries.id, id));
+  }
+
+  // Service type operations
+  async getAllServiceTypes(): Promise<ServiceType[]> {
+    return await db
+      .select()
+      .from(serviceTypes)
+      .where(eq(serviceTypes.isActive, "active"))
+      .orderBy(serviceTypes.name);
+  }
+
+  async createServiceType(serviceTypeData: InsertServiceType): Promise<ServiceType> {
+    const [serviceType] = await db
+      .insert(serviceTypes)
+      .values(serviceTypeData)
+      .returning();
+    return serviceType;
+  }
+
+  // Appointment operations
+  async createAppointment(appointmentData: InsertAppointment): Promise<Appointment> {
+    const [appointment] = await db
+      .insert(appointments)
+      .values(appointmentData)
+      .returning();
+    return appointment;
+  }
+
+  async getAllAppointments(): Promise<Appointment[]> {
+    return await db
+      .select()
+      .from(appointments)
+      .orderBy(desc(appointments.appointmentDate));
+  }
+
+  async getAppointmentsByDate(date: string): Promise<Appointment[]> {
+    const startOfDay = new Date(date);
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+    
+    return await db
+      .select()
+      .from(appointments)
+      .where(
+        and(
+          gte(appointments.appointmentDate, startOfDay),
+          lte(appointments.appointmentDate, endOfDay)
+        )
+      )
+      .orderBy(appointments.appointmentDate);
+  }
+
+  async updateAppointmentStatus(id: string, status: string): Promise<void> {
+    await db
+      .update(appointments)
+      .set({ status, updatedAt: new Date() })
+      .where(eq(appointments.id, id));
   }
 }
 

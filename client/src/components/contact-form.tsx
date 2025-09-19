@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,28 @@ import { apiRequest } from "@/lib/queryClient";
 import { Send } from "lucide-react";
 
 export function ContactForm() {
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    const section = sectionRef.current;
+    if (section) {
+      const animatedElements = section.querySelectorAll('.animate-fade-in');
+      animatedElements.forEach((el) => observer.observe(el));
+    }
+
+    return () => observer.disconnect();
+  }, []);
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -58,7 +80,7 @@ export function ContactForm() {
   };
 
   return (
-    <section className="py-20 bg-secondary" data-testid="section-contact">
+    <section ref={sectionRef} className="py-20 bg-secondary" data-testid="section-contact">
       <div className="container mx-auto px-4">
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-12 animate-fade-in">
