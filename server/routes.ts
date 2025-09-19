@@ -136,6 +136,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Naver Maps client ID endpoint
+  app.get('/api/naver/client-id', (req, res) => {
+    const clientId = process.env.NAVER_MAP_CLIENT_ID;
+    if (!clientId) {
+      return res.status(500).json({ message: "Naver Maps API credentials not configured", details: null });
+    }
+    res.json({ clientId });
+  });
+
   // Naver Maps API proxy endpoints
   app.get('/api/naver/geocode', async (req, res) => {
     try {

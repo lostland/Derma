@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { MapPin, Train, Bus, Clock, Map } from "lucide-react";
+import { MapPin, Train, Bus, Clock } from "lucide-react";
 import { useEffect, useRef } from "react";
+import { NaverMap } from "./naver-map";
 
 export function LocationSection() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -89,18 +90,23 @@ export function LocationSection() {
 
           <div className="animate-fade-in">
             <Card className="h-96 overflow-hidden shadow-lg">
-              <CardContent className="p-0 h-full relative bg-gray-100">
-                {/* Placeholder for Naver Map */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center">
-                    <Map className="w-16 h-16 text-accent mb-4 mx-auto" />
-                    <p className="text-lg font-medium text-primary mb-2">네이버 지도</p>
-                    <p className="text-muted-foreground mb-1">서울 송파구 올림픽로 99</p>
-                    <p className="text-sm text-muted-foreground">
-                      지도 API 연동이 필요합니다
-                    </p>
-                  </div>
-                </div>
+              <CardContent className="p-0 h-full">
+                <NaverMap
+                  width="100%"
+                  height="384px"
+                  center={{ lat: 37.5137, lng: 127.0982 }}
+                  zoom={16}
+                  markers={[
+                    {
+                      lat: 37.5137,
+                      lng: 127.0982,
+                      title: "병원 위치",
+                      content: "<strong>병원명</strong><br/>서울 송파구 올림픽로 99<br/>8호선 잠실나루역 2번 출구 도보 5분"
+                    }
+                  ]}
+                  className="rounded-lg"
+                  data-testid="clinic-map"
+                />
               </CardContent>
             </Card>
           </div>
