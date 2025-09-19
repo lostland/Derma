@@ -136,6 +136,154 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Naver Maps API proxy endpoints
+  app.get('/api/naver/geocode', async (req, res) => {
+    try {
+      const { query } = req.query;
+      if (!query || typeof query !== 'string') {
+        return res.status(400).json({ message: "Query parameter is required (must be a string)", details: null });
+      }
+
+      const trimmedQuery = query.trim();
+      if (!trimmedQuery || trimmedQuery.length > 200) {
+        return res.status(400).json({ message: "Query must be between 1-200 characters", details: null });
+      }
+
+      const clientId = process.env.NAVER_MAP_CLIENT_ID;
+      const clientSecret = process.env.NAVER_MAP_CLIENT_SECRET;
+
+      if (!clientId || !clientSecret) {
+        return res.status(500).json({ message: "Naver Maps API credentials not configured", details: null });
+      }
+
+      const naverApiUrl = `https://naveropenapi.apigw.ntruss.com/map-geocode/v2/geocode?query=${encodeURIComponent(trimmedQuery)}`;
+      
+      const response = await fetch(naverApiUrl, {
+        headers: {
+          'X-NCP-APIGW-API-KEY-ID': clientId,
+          'X-NCP-APIGW-API-KEY': clientSecret,
+        },
+        signal: AbortSignal.timeout(10000)
+      });
+
+      if (!response.ok) {
+        if (response.status >= 400 && response.status < 500) {
+          const errorData = await response.json().catch(() => ({}));
+          return res.status(400).json({ 
+            message: "잘못된 요청입니다.", 
+            details: errorData.message || `Naver API error: ${response.status}`
+          });
+        }
+        if (response.status >= 500) {
+          return res.status(502).json({
+            message: "업스트림 서비스 오류입니다.",
+            details: `Naver API error: ${response.status}`
+          });
+        }
+        throw new Error(`Naver API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error("Error geocoding with Naver API:", error);
+      
+      if (error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError')) {
+        return res.status(504).json({ 
+          message: "요청 시간이 초과되었습니다. 잠시 후 다시 시도해주세요.", 
+          details: null 
+        });
+      }
+      
+      // Network/connectivity errors should be 502, not 500
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        return res.status(502).json({ 
+          message: "네트워크 연결 오류입니다.", 
+          details: null 
+        });
+      }
+      
+      res.status(500).json({ 
+        message: "주소 검색 중 오류가 발생했습니다.", 
+        details: null 
+      });
+    }
+  });
+
+  app.get('/api/naver/reverse-geocode', async (req, res) => {
+    try {
+      const { coords } = req.query;
+      if (!coords || typeof coords !== 'string') {
+        return res.status(400).json({ message: "Coords parameter is required (format: lng,lat)", details: null });
+      }
+
+      // Validate coords format (lng,lat)
+      const coordsPattern = /^-?\d+(\.\d+)?,-?\d+(\.\d+)?$/;
+      if (!coordsPattern.test(coords)) {
+        return res.status(400).json({ message: "Invalid coords format. Expected: lng,lat", details: null });
+      }
+
+      const clientId = process.env.NAVER_MAP_CLIENT_ID;
+      const clientSecret = process.env.NAVER_MAP_CLIENT_SECRET;
+
+      if (!clientId || !clientSecret) {
+        return res.status(500).json({ message: "Naver Maps API credentials not configured", details: null });
+      }
+
+      const naverApiUrl = `https://naveropenapi.apigw.ntruss.com/map-reversegeocode/v2/gc?coords=${encodeURIComponent(coords)}&sourcecrs=epsg:4326&orders=roadaddr,addr,admcode,legalcode&output=json`;
+      
+      const response = await fetch(naverApiUrl, {
+        headers: {
+          'X-NCP-APIGW-API-KEY-ID': clientId,
+          'X-NCP-APIGW-API-KEY': clientSecret,
+        },
+        signal: AbortSignal.timeout(10000)
+      });
+
+      if (!response.ok) {
+        if (response.status >= 400 && response.status < 500) {
+          const errorData = await response.json().catch(() => ({}));
+          return res.status(400).json({ 
+            message: "잘못된 요청입니다.", 
+            details: errorData.message || `Naver API error: ${response.status}`
+          });
+        }
+        if (response.status >= 500) {
+          return res.status(502).json({
+            message: "업스트림 서비스 오류입니다.",
+            details: `Naver API error: ${response.status}`
+          });
+        }
+        throw new Error(`Naver API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error("Error reverse geocoding with Naver API:", error);
+      
+      if (error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError')) {
+        return res.status(504).json({ 
+          message: "요청 시간이 초과되었습니다. 잠시 후 다시 시도해주세요.", 
+          details: null 
+        });
+      }
+      
+      // Network/connectivity errors should be 502, not 500
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        return res.status(502).json({ 
+          message: "네트워크 연결 오류입니다.", 
+          details: null 
+        });
+      }
+      
+      res.status(500).json({ 
+        message: "좌표를 주소로 변환하는 중 오류가 발생했습니다.", 
+        details: null 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
