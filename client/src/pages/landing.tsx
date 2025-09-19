@@ -27,7 +27,7 @@ export default function Landing() {
     if (isMobile) {
       // Try to open KakaoTalk app directly on mobile
       const kakaoAppUrl = "kakaotalk://plusfriend/chat/_SeoulAntiAgingSkinClinic";
-      const fallbackUrl = "https://pf.kakao.com/_SeoulAntiAgingSkinClinic/chat";
+      const fallbackUrl = "http://pf.kakao.com/_Bxdjmxl/chat";
       
       const openApp = () => {
         window.location.href = kakaoAppUrl;
