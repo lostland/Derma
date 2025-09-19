@@ -10,10 +10,11 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import { Calendar as CalendarIcon, Clock, User, Phone, Mail, Send } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, User, Phone, Mail, Send, MapPin } from "lucide-react";
 import { format, addDays, setHours, setMinutes } from "date-fns";
 import { ko } from "date-fns/locale";
 import type { ServiceType } from "@shared/schema";
+import { LocationSearch, type LocationData } from "@/components/location-search";
 
 interface BookingFormData {
   name: string;
@@ -23,6 +24,7 @@ interface BookingFormData {
   appointmentDate: Date | undefined;
   appointmentTime: string;
   notes: string;
+  location: LocationData | null;
 }
 
 export function AppointmentBooking() {
@@ -35,6 +37,7 @@ export function AppointmentBooking() {
     appointmentDate: undefined,
     appointmentTime: "",
     notes: "",
+    location: null,
   });
   const [selectedDate, setSelectedDate] = useState<Date>();
   const { toast } = useToast();
@@ -88,6 +91,9 @@ export function AppointmentBooking() {
         serviceTypeId: data.serviceTypeId,
         appointmentDate: appointmentDateTime.toISOString(),
         notes: data.notes || undefined,
+        address: data.location?.address || undefined,
+        latitude: data.location?.latitude?.toString() || undefined,
+        longitude: data.location?.longitude?.toString() || undefined,
       };
 
       return await apiRequest("POST", "/api/appointments", bookingData);
@@ -105,6 +111,7 @@ export function AppointmentBooking() {
         appointmentDate: undefined,
         appointmentTime: "",
         notes: "",
+        location: null,
       });
       setSelectedDate(undefined);
       queryClient.invalidateQueries({ queryKey: ["/api/appointments"] });
@@ -135,8 +142,12 @@ export function AppointmentBooking() {
     bookingMutation.mutate(formData);
   };
 
-  const handleChange = (field: keyof BookingFormData, value: string | Date | undefined) => {
+  const handleChange = (field: keyof BookingFormData, value: string | Date | undefined | LocationData | null) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleLocationChange = (location: LocationData | null) => {
+    handleChange('location', location);
   };
 
   const handleDateSelect = (date: Date | undefined) => {
@@ -303,6 +314,19 @@ export function AppointmentBooking() {
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
+
+                <div className="col-span-full">
+                  <Label className="text-sm font-medium mb-2 flex items-center gap-2">
+                    <MapPin className="w-4 h-4" />
+                    거주지 주소 (선택사항)
+                  </Label>
+                  <LocationSearch
+                    value={formData.location}
+                    onChange={handleLocationChange}
+                    placeholder="주소를 검색하거나 지도에서 위치를 선택하세요 (더 나은 서비스를 위해)"
+                    className="w-full"
+                  />
                 </div>
 
                 <div>

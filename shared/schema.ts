@@ -64,6 +64,10 @@ export const appointments = pgTable("appointments", {
   serviceTypeId: varchar("service_type_id").references(() => serviceTypes.id),
   appointmentDate: timestamp("appointment_date").notNull(),
   notes: text("notes"),
+  // Location information
+  address: text("address"), // Full address string
+  latitude: decimal("latitude", { precision: 10, scale: 8 }), // Decimal degrees
+  longitude: decimal("longitude", { precision: 11, scale: 8 }), // Decimal degrees
   status: varchar("status", { length: 20 }).default("pending"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -90,6 +94,9 @@ export const insertAppointmentSchema = createInsertSchema(appointments).pick({
   serviceTypeId: true,
   appointmentDate: true,
   notes: true,
+  address: true,
+  latitude: true,
+  longitude: true,
 });
 
 export type UpsertUser = typeof users.$inferInsert;
