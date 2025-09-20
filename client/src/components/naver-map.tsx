@@ -56,13 +56,15 @@ export function NaverMap({
         if (!data?.clientId) throw new Error('Missing clientId');
         const script = document.createElement('script');
         script.id = 'naver-maps-api-script';
-        script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${data.clientId}&callback=initNaverMap`;
+        script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${data.clientId}`;
         script.async = true;
         script.onerror = () => setLoadError('지도를 불러오는데 실패했습니다.');
         document.head.appendChild(script);
       })
       .catch(() => setLoadError('지도 API 설정을 불러오는데 실패했습니다.'));
 
+    (window as any).initNaverMap();
+    
     return () => {
       delete (window as any).initNaverMap;
       // 스크립트는 보통 유지. 필요 시에만 제거
@@ -118,16 +120,29 @@ export function NaverMap({
     markersRef.current = [];
 
     const arr: any[] = [];
-    markers.forEach(m => {
-      const marker = new window.naver.maps.Marker({
-        position: new window.naver.maps.LatLng(m.lat, m.lng),
-        map: mapInstanceRef.current,
-        title: m.title || '',
+    try {
+      markers.forEach(m => {
+        if (!m || typeof m.lat !== 'number' || typeof m.lng !== 'number') {
+          console.warn('Invalid marker data:', m);
+          return;
+        }
+        
+        const marker = new window.naver.maps.Marker({
+          position: new window.naver.maps.LatLng(m.lat, m.lng),
+          map: mapInstanceRef.current,
+          title: m.title || '',
+        });
+        
+        // 마커가 성공적으로 생성되었는지 확인
+        if (marker) {
+          arr.push({ marker, listener: null });
+        }
       });
-      // (infoWindow 처리 필요 시 여기서)
-      arr.push({ marker, listener: null });
-    });
-    markersRef.current = arr;
+      markersRef.current = arr;
+    } catch (error) {
+      console.error('마커 생성 중 오류:', error);
+      setLoadError('마커를 생성하는 중 오류가 발생했습니다.');
+    }
   }, [markers]);
 
   if (loadError) {
