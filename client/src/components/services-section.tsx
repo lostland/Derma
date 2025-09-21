@@ -1,6 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Sparkles, Leaf, Shield } from "lucide-react";
 import { useEffect, useRef } from "react";
+import lift_img from "@assets/lift.png";
+import anti_img from "@assets/anti.png";
+import re_img from "@assets/re.png";
 
 export function ServicesSection() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -10,7 +12,7 @@ export function ServicesSection() {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
+            entry.target.classList.add("visible");
           }
         });
       },
@@ -19,32 +21,37 @@ export function ServicesSection() {
 
     const section = sectionRef.current;
     if (section) {
-      const animatedElements = section.querySelectorAll('.animate-fade-in');
+      const animatedElements = section.querySelectorAll(".animate-fade-in");
       animatedElements.forEach((el) => observer.observe(el));
     }
 
     return () => observer.disconnect();
   }, []);
+
   const services = [
     {
-      icon: Sparkles,
+      image: anti_img,
       title: "안티에이징",
       description: "주름 개선, 탄력 증진을 위한 전문적인 안티에이징 치료",
     },
     {
-      icon: Leaf,
+      image: re_img,
       title: "피부재생",
       description: "손상된 피부의 재생과 회복을 돕는 첨단 치료법",
     },
     {
-      icon: Shield,
-      title: "여드름 치료",
-      description: "개인 맞춤형 여드름 치료로 건강한 피부로 회복",
+      image: lift_img,
+      title: "피부 리프팅",
+      description: "피부의 탄력과 주름을 개선",
     },
   ];
 
   return (
-    <section ref={sectionRef} className="py-20 bg-secondary" data-testid="section-services">
+    <section
+      ref={sectionRef}
+      className="py-20 bg-secondary"
+      data-testid="section-services"
+    >
       <div className="container mx-auto px-4">
         <div className="text-center mb-16 animate-fade-in">
           <h3 className="text-3xl md:text-4xl font-bold text-primary mb-4">
@@ -56,24 +63,27 @@ export function ServicesSection() {
         </div>
 
         <div className="grid md:grid-cols-3 gap-8">
-          {services.map((service, index) => {
-            const IconComponent = service.icon;
-            return (
-              <Card
-                key={index}
-                className="bg-card p-8 shadow-lg hover:shadow-xl transition-all animate-fade-in"
-                data-testid={`card-service-${index}`}
-              >
-                <CardContent className="p-0">
-                  <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mb-6">
-                    <IconComponent className="w-8 h-8 text-accent" />
-                  </div>
-                  <h4 className="text-xl font-bold mb-4">{service.title}</h4>
-                  <p className="text-muted-foreground">{service.description}</p>
-                </CardContent>
-              </Card>
-            );
-          })}
+          {services.map((service, index) => (
+            <Card
+              key={index}
+              className="bg-card overflow-hidden shadow-lg hover:shadow-xl transition-all animate-fade-in"
+              data-testid={`card-service-${index}`}
+            >
+              {/* 카드 전체를 채우는 이미지 */}
+              <div className="w-full h-48 md:h-64">
+                <img
+                  src={service.image}
+                  alt={service.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
+              <CardContent className="p-6">
+                <h4 className="text-xl font-bold mb-4">{service.title}</h4>
+                <p className="text-muted-foreground">{service.description}</p>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
     </section>

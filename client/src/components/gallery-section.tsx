@@ -1,5 +1,10 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { useEffect, useRef } from "react";
+import wating_img from "@assets/waiting.png";
+import talk_img from "@assets/talk.png";
+import laser_img from "@assets/laser.png";
+import careroom_img from "@assets/careroom.png";
+
 
 export function GallerySection() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -26,30 +31,25 @@ export function GallerySection() {
   }, []);
   const galleryItems = [
     {
-      image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+      image: laser_img,
       title: "첨단 레이저 장비",
       description: "최신 레이저 기술로 안전하고 효과적인 치료",
     },
     {
-      image: "https://images.unsplash.com/photo-1631815588090-d4bfec5b1ccb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+      image: careroom_img,
       title: "프리미엄 치료실",
       description: "개인 프라이버시가 보장되는 쾌적한 치료 공간",
     },
     {
-      image: "https://images.unsplash.com/photo-1582750433449-648ed127bb54?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+      image: talk_img,
       title: "전문의 상담실",
       description: "1:1 맞춤 상담으로 최적의 치료 계획 수립",
     },
     {
-      image: "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+      image: wating_img,
       title: "편안한 대기실",
       description: "편안하고 안락한 분위기의 접수 및 대기 공간",
-    },
-    {
-      image: "https://images.unsplash.com/photo-1486825586573-7131f7991bdd?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-      title: "병원 전경",
-      description: "접근하기 편리한 위치의 현대적인 의료시설",
-    },
+    }
   ];
 
   return (
