@@ -41,14 +41,28 @@ export function NaverMap({
   const [isLoaded, setIsLoaded] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
 
+  console.log('NaverMap: Rendering...');
+
+  useEffect(() => {
+    (window as any).navermap_authFailure = () => {
+      console.error('[NAVER] auth failure');
+      setLoadError('지도 인증에 실패했습니다. 키/도메인 설정을 확인해 주세요.');
+    };
+  }, []);
+  
   // 1) 스크립트 '한 번만' 로드
   useEffect(() => {
     if (window.naver?.maps) {
+      console.log('NaverMap: Already loaded!');
       setIsLoaded(true);
       return;
     }
-
+    console.log('1--------------------');
+    
     (window as any).initNaverMap = () => setIsLoaded(true);
+
+    // 이미 붙어있으면 재첨부 방지
+    if (document.getElementById('naver-maps-api-script')) return;
 
     fetch('/api/naver/client-id')
       .then(r => r.json())
@@ -56,15 +70,18 @@ export function NaverMap({
         if (!data?.clientId) throw new Error('Missing clientId');
         const script = document.createElement('script');
         script.id = 'naver-maps-api-script';
-        script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${data.clientId}`;
+        script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${data.clientId}&callback=initNaverMap`;
         script.async = true;
         script.onerror = () => setLoadError('지도를 불러오는데 실패했습니다.');
+
+        console.log('[NAVER] origin=', window.location.origin);
+        console.log('[NAVER] referrer(meta)=', document.referrer);
+        console.log('[NAVER] src=', script.src);
+        
         document.head.appendChild(script);
       })
       .catch(() => setLoadError('지도 API 설정을 불러오는데 실패했습니다.'));
 
-    (window as any).initNaverMap();
-    
     return () => {
       delete (window as any).initNaverMap;
       // 스크립트는 보통 유지. 필요 시에만 제거
@@ -75,9 +92,17 @@ export function NaverMap({
 
   // 2) 지도 초기화 (isLoaded가 true가 된 뒤 한 번)
   useEffect(() => {
-    if (!isLoaded || !mapRef.current || !window.naver?.maps) return;
-
+    if (!isLoaded || !mapRef.current || !window.naver?.maps) 
+    {
+      console.log('2-1--------------------');
+      return;
+    }
+    console.log('2--------------------');
+    
     try {
+      console.log('NaverMap: Initializing map...');
+      console.log('NaverMap: mapRef.current=', mapRef.current);
+
       const map = new window.naver.maps.Map(mapRef.current, {
         center: new window.naver.maps.LatLng(center.lat, center.lng),
         zoom,
@@ -92,27 +117,45 @@ export function NaverMap({
           position: window.naver.maps.Position.TOP_LEFT,
         },
       });
+      
+      console.log('NaverMap: Map initialized!');
+      
       mapInstanceRef.current = map;
       setLoadError(null);
     } catch {
       setLoadError('지도 초기화에 실패했습니다.');
     }
+    
   }, [isLoaded]);
 
   // 3) 중심/줌 업데이트
   useEffect(() => {
-    if (!mapInstanceRef.current || !window.naver?.maps) return;
+    if (!mapInstanceRef.current || !window.naver?.maps) 
+    {
+      console.log('3-1--------------------');
+      return;
+    }
+    console.log('3--------------------');
+    
+    console.log('NaverMap: Updating center/zoom...');
     mapInstanceRef.current.setCenter(
       new window.naver.maps.LatLng(center.lat, center.lng)
     );
     mapInstanceRef.current.setZoom(zoom);
+    console.log('NaverMap: Center/zoom updated!');
   }, [center.lat, center.lng, zoom]);
 
   // 4) 마커 업데이트
   useEffect(() => {
-    if (!mapInstanceRef.current || !window.naver?.maps) return;
+    if (!mapInstanceRef.current || !window.naver?.maps) 
+    {
+      console.log('4-1--------------------');
+      return;
+    }
+    console.log('4--------------------');
 
     // 기존 마커 정리
+    console.log('NaverMap: Updating markers...');
     markersRef.current.forEach(({ marker, listener }) => {
       if (listener) window.naver.maps.Event.removeListener(listener);
       if (marker) marker.setMap(null);
@@ -120,32 +163,22 @@ export function NaverMap({
     markersRef.current = [];
 
     const arr: any[] = [];
-    try {
-      markers.forEach(m => {
-        if (!m || typeof m.lat !== 'number' || typeof m.lng !== 'number') {
-          console.warn('Invalid marker data:', m);
-          return;
-        }
-        
-        const marker = new window.naver.maps.Marker({
-          position: new window.naver.maps.LatLng(m.lat, m.lng),
-          map: mapInstanceRef.current,
-          title: m.title || '',
-        });
-        
-        // 마커가 성공적으로 생성되었는지 확인
-        if (marker) {
-          arr.push({ marker, listener: null });
-        }
+    markers.forEach(m => {
+      const marker = new window.naver.maps.Marker({
+        position: new window.naver.maps.LatLng(m.lat, m.lng),
+        map: mapInstanceRef.current,
+        title: m.title || '',
       });
-      markersRef.current = arr;
-    } catch (error) {
-      console.error('마커 생성 중 오류:', error);
-      setLoadError('마커를 생성하는 중 오류가 발생했습니다.');
-    }
+
+       console.log('NaverMap: Marker created!', marker)
+      // (infoWindow 처리 필요 시 여기서)
+      arr.push({ marker, listener: null });
+    });
+    markersRef.current = arr;
   }, [markers]);
 
   if (loadError) {
+    console.error('NaverMap: Error loading map:', loadError);
     return (
       <div 
         className={`flex items-center justify-center bg-gray-100 ${className}`}
@@ -161,6 +194,7 @@ export function NaverMap({
   }
 
   if (!isLoaded) {
+    console.log('NaverMap: Loading...');
     return (
       <div 
         className={`flex items-center justify-center bg-gray-100 ${className}`}
