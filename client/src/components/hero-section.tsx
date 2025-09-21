@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Calendar, Phone, MessageSquare } from "lucide-react";
+import heroImage from "@assets/xw0MTtfRZ3rCjnBiosoX8_1758442035276.png";
 
 interface HeroSectionProps {
   onKakaoClick: () => void;
@@ -11,7 +12,7 @@ export function HeroSection({ onKakaoClick }: HeroSectionProps) {
       {/* Background Image */}
       <div className="absolute inset-0">
         <img
-          src="https://images.unsplash.com/photo-1551190822-a9333d879b1f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=1080"
+          src={heroImage}
           alt="Modern medical facility"
           className="w-full h-full object-cover"
         />
