@@ -12,15 +12,6 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-
-// Admins table for simple admin auth
-export const admins = pgTable("admins", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  username: varchar("username", { length: 100 }).unique().notNull(),
-  passwordHash: varchar("password_hash", { length: 255 }).notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
 // Session storage table for Replit Auth
 export const sessions = pgTable(
   "sessions",
@@ -117,4 +108,19 @@ export type InsertServiceType = z.infer<typeof insertServiceTypeSchema>;
 export type Appointment = typeof appointments.$inferSelect;
 export type InsertAppointment = z.infer<typeof insertAppointmentSchema>;
 
-export type Admin = typeof admins.$inferSelect;
+
+// Admin credentials table
+export const adminUsers = pgTable("admin_users", {
+  username: varchar("username", { length: 50 }).primaryKey(),
+  passwordHash: varchar("password_hash", { length: 255 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertAdminUserSchema = createInsertSchema(adminUsers, {
+  username: z.string().min(3).max(50),
+  passwordHash: z.string().min(10),
+});
+
+export type AdminUser = typeof adminUsers.$inferSelect;
+export type InsertAdminUser = typeof adminUsers.$inferInsert;

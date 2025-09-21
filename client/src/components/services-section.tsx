@@ -66,7 +66,7 @@ export function ServicesSection() {
           {services.map((service, index) => (
             <Card
               key={index}
-              className="bg-card overflow-hidden shadow-lg hover:shadow-xl transition-all animate-fade-in"
+              className="bg-card overflow-hidden shadow-xl hover:shadow-2xl transition-all animate-fade-in border border-border/50 backdrop-blur-sm"
               data-testid={`card-service-${index}`}
             >
               {/* 카드 전체를 채우는 이미지 */}
