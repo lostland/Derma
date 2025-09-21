@@ -1,1 +1,106 @@
-// modified routes.ts with admin auth routes
+import { type Express } from "express";
+import { createServer } from "http";
+import { storage } from "./storage";
+import {
+  insertInquirySchema,
+  insertServiceTypeSchema,
+  insertAppointmentSchema,
+} from "@shared/schema";
+
+export function registerRoutes(app: Express) {
+  const server = createServer(app);
+
+  // Inquiry routes
+  app.post("/api/inquiries", async (req, res) => {
+    try {
+      const validatedData = insertInquirySchema.parse(req.body);
+      const inquiry = await storage.createInquiry(validatedData);
+      res.json(inquiry);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/inquiries", async (req, res) => {
+    try {
+      const inquiries = await storage.getAllInquiries();
+      res.json(inquiries);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.patch("/api/inquiries/:id/status", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+      await storage.updateInquiryStatus(id, status);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Service type routes
+  app.get("/api/service-types", async (req, res) => {
+    try {
+      const serviceTypes = await storage.getAllServiceTypes();
+      res.json(serviceTypes);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/service-types", async (req, res) => {
+    try {
+      const validatedData = insertServiceTypeSchema.parse(req.body);
+      const serviceType = await storage.createServiceType(validatedData);
+      res.json(serviceType);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Appointment routes
+  app.post("/api/appointments", async (req, res) => {
+    try {
+      const validatedData = insertAppointmentSchema.parse(req.body);
+      const appointment = await storage.createAppointment(validatedData);
+      res.json(appointment);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/appointments", async (req, res) => {
+    try {
+      const appointments = await storage.getAllAppointments();
+      res.json(appointments);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/appointments/date/:date", async (req, res) => {
+    try {
+      const { date } = req.params;
+      const appointments = await storage.getAppointmentsByDate(date);
+      res.json(appointments);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.patch("/api/appointments/:id/status", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+      await storage.updateAppointmentStatus(id, status);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  return server;
+}
