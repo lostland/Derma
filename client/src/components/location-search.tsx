@@ -56,7 +56,7 @@ export function LocationSearch({
         
         await new Promise<void>((resolve, reject) => {
           const script = document.createElement('script');
-          script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${data.clientId}`;
+          script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${data.clientId}`;
           script.async = true;
           script.onload = () => resolve();
           script.onerror = () => reject(new Error('Failed to load Naver Maps'));
