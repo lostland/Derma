@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Phone, MessageSquare, Settings } from "lucide-react";
 import { useLocation } from "wouter";
+import logoImage from "@assets/logo001.png";
 
 export default function Landing() {
   const [showAdminModal, setShowAdminModal] = useState(false);
@@ -72,9 +73,7 @@ export default function Landing() {
       {/* Fixed Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border shadow-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-xl md:text-2xl font-bold text-primary">
-            서울 안티에이징 피부과 의원
-          </h1>
+          <div className="h-16 md:h-20 flex items-center justify-center"><img src={logoImage} alt="서울 안티에이징 피부과 의원" className="max-h-full object-contain mx-auto" /></div>
           <div className="flex items-center space-x-4">
 
             <div className="hidden md:flex items-center space-x-2 text-primary font-medium">
@@ -99,7 +98,7 @@ export default function Landing() {
         <HeroSection onKakaoClick={openKakaoTalk} />
         <ServicesSection />
         <GallerySection />
-        <AppointmentBooking />
+        {/* <AppointmentBooking /> */}
         <ContactForm />
         <LocationSection />
       </main>

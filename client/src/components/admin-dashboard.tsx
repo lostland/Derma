@@ -13,6 +13,9 @@ export function AdminDashboard() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // compact rows expand/collapse state
+  const [expandedIds, setExpandedIds] = useState<Record<string, boolean>>({});
+
   const { data: inquiries, isLoading, error } = useQuery<Inquiry[]>({
     queryKey: ["/api/inquiries"],
     retry: false,
@@ -137,42 +140,79 @@ export function AdminDashboard() {
       </div>
 
       <div className="grid gap-6">
-        {Array.isArray(inquiries) && inquiries.map((inquiry: Inquiry) => (
-          <Card key={inquiry.id} className="shadow-sm" data-testid={`inquiry-${inquiry.id}`}>
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <User className="w-5 h-5" />
-                  {inquiry.name}
-                </CardTitle>
-                <div className="flex items-center gap-2">
-                  <Badge variant={getStatusBadgeVariant(inquiry.status || "new")}>
-                    {getStatusText(inquiry.status || "new")}
-                  </Badge>
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <Calendar className="w-4 h-4 mr-1" />
+        {
+Array.isArray(inquiries) && inquiries.map((inquiry: Inquiry) => {
+          const isCompact = (inquiry.status === "completed" || inquiry.status === "contacted");
+          const isOpen = expandedIds[inquiry.id] ?? !isCompact;
+
+          const toggle = () => {
+            if (isCompact) {
+              setExpandedIds((prev) => ({ ...prev, [inquiry.id]: !isOpen }));
+            }
+          };
+
+          return (
+          <Card key={inquiry.id} className={"shadow-sm " + (isCompact ? "cursor-pointer" : "")} data-testid={`inquiry-${inquiry.id}`}>
+            <CardHeader className="pb-3" onClick={toggle}>
+              {isCompact ? (
+                <div className="flex items-center justify-between">
+                  <div className="text-sm md:text-base font-medium truncate">
+                    {inquiry.name} <span className="text-muted-foreground">{inquiry.phone}</span>
+                    <span className="ml-2 text-xs text-muted-foreground">({getStatusText(inquiry.status || "new")})</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground hidden md:block">
                     {new Date(inquiry.createdAt!).toLocaleString("ko-KR")}
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <User className="w-5 h-5" />
+                    {inquiry.name}
+                  </CardTitle>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={getStatusBadgeVariant(inquiry.status || "new")}>
+                      {getStatusText(inquiry.status || "new")}
+                    </Badge>
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <Calendar className="w-4 h-4 mr-1" />
+                      {new Date(inquiry.createdAt!).toLocaleString("ko-KR")}
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Phone className="w-4 h-4" />
-                <span className="font-mono">{inquiry.phone}</span>
-              </div>
-              
-              <div>
-                <h4 className="font-medium mb-2">문의 내용:</h4>
-                <p className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
-                  {inquiry.inquiry}
-                </p>
+
+            <CardContent className={isOpen ? "space-y-4 pt-0" : "hidden"}>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Phone className="w-4 h-4" />
+                    {inquiry.phone}
+                  </div>
+                  <div className="flex items-start gap-2 text-sm">
+                    <MessageSquare className="w-4 h-4 mt-0.5" />
+                    <span className="whitespace-pre-wrap">{inquiry.inquiry}</span>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="text-sm">
+                    <span className="text-muted-foreground">등록일:&nbsp;</span>
+                    {new Date(inquiry.createdAt!).toLocaleString("ko-KR")}
+                  </div>
+                  <div className="text-sm">
+                    <span className="text-muted-foreground">상태:&nbsp;</span>
+                    <Badge variant={getStatusBadgeVariant(inquiry.status || "new")}>
+                      {getStatusText(inquiry.status || "new")}
+                    </Badge>
+                  </div>
+                </div>
               </div>
 
-              <div className="flex gap-2 pt-2">
+              {/* 액션 버튼 */}
+              <div className="flex flex-wrap gap-2 pt-2">
                 <Button
-                  variant="outline"
-                  size="sm"
+                  variant="secondary"
                   onClick={() => handleStatusChange(inquiry.id, "contacted")}
                   disabled={statusMutation.isPending}
                   data-testid={`button-contacted-${inquiry.id}`}
@@ -181,7 +221,6 @@ export function AdminDashboard() {
                 </Button>
                 <Button
                   variant="outline"
-                  size="sm"
                   onClick={() => handleStatusChange(inquiry.id, "completed")}
                   disabled={statusMutation.isPending}
                   data-testid={`button-completed-${inquiry.id}`}
@@ -189,8 +228,6 @@ export function AdminDashboard() {
                   처리완료
                 </Button>
                 <Button
-                  variant="outline"
-                  size="sm"
                   onClick={() => handleStatusChange(inquiry.id, "new")}
                   disabled={statusMutation.isPending}
                   data-testid={`button-reset-${inquiry.id}`}
@@ -200,7 +237,7 @@ export function AdminDashboard() {
               </div>
             </CardContent>
           </Card>
-        ))}
+        )})}
       </div>
     </div>
   );

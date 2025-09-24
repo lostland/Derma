@@ -7,6 +7,8 @@ import {
   insertAppointmentSchema,
 } from "@shared/schema";
 
+const ADMIN_USER = { username: "admin", password: "1234" } as { username: string; password: string };
+
 export function registerRoutes(app: Express) {
   const server = createServer(app);
 
@@ -16,7 +18,7 @@ export function registerRoutes(app: Express) {
     try {
       const { username, password } = req.body || {};
       // TODO: replace with secure storage/env validation
-      if (username === "admin" && password === "1234") {
+      if (username === ADMIN_USER.username && password === ADMIN_USER.password) {
         res.cookie("admin_auth", "1", { httpOnly: true, sameSite: "lax", path: "/" });
         return res.json({ success: true });
       }
@@ -130,6 +132,23 @@ export function registerRoutes(app: Express) {
       const { status } = req.body;
       await storage.updateAppointmentStatus(id, status);
       res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+
+  app.post("/api/admin/change-password", async (req, res) => {
+    try {
+      const { currentPassword, newPassword } = req.body || {};
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ success: false, message: "필수 항목이 누락되었습니다." });
+      }
+      if (currentPassword !== ADMIN_USER.password) {
+        return res.status(401).json({ success: false, message: "현재 비밀번호가 일치하지 않습니다." });
+      }
+      ADMIN_USER.password = newPassword;
+      return res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
