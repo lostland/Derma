@@ -45,9 +45,7 @@ export function NaverMap({width = "100%",
   const markersRef = useRef<any[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [readyToShow, setReadyToShow] = useState(false);
-
-  console.log('NaverMap: Rendering...');
+console.log('NaverMap: Rendering...');
 
   useEffect(() => {
     (window as any).navermap_authFailure = () => {
@@ -110,7 +108,7 @@ export function NaverMap({width = "100%",
       console.log('NaverMap: mapRef.current=', mapRef.current);
 
       const map = new window.naver.maps.Map(mapRef.current, {
-        center: new window.naver.maps.LatLng(center.lat, center.lng),
+        //center: new window.naver.maps.LatLng(center.lat, center.lng),
         zoom,
         mapTypeControl: true,
         mapTypeControlOptions: {
@@ -127,8 +125,8 @@ export function NaverMap({width = "100%",
       console.log('NaverMap: Map initialized!');
 
       mapInstanceRef.current = map;
-      if (!address) setReadyToShow(true);
-      setLoadError(null);
+      if (!address)
+setLoadError(null);
     } catch {
       setLoadError('지도 초기화에 실패했습니다.');
     }
@@ -144,8 +142,7 @@ export function NaverMap({width = "100%",
       // @ts-ignore
       if (!maps.Service || !maps.Service.geocode) {
         console.warn("Naver Maps Geocoder not available — using fallbackCenter or center");
-        setReadyToShow(true);
-        const lat = (fallbackCenter?.lat ?? center.lat);
+const lat = (fallbackCenter?.lat ?? center.lat);
         const lng = (fallbackCenter?.lng ?? center.lng);
         const ll = new maps.LatLng(lat, lng);
         mapInstanceRef.current!.setCenter(ll);
@@ -153,8 +150,7 @@ export function NaverMap({width = "100%",
         const bubbleHtml = addressBubbleHtml || `<div style=\"display:inline-block; padding:10px 12px; font-size:13px; font-weight:600; background:#fff; border:1px solid rgba(0,0,0,0.15); box-shadow:0 4px 12px rgba(0,0,0,0.15); border-radius:10px; color:#111; white-space:nowrap;\">${addressLabel || address}</div>`;
         const iw = new maps.InfoWindow({ content: bubbleHtml, borderWidth: 0, disableAnchor: false });
         iw.open(mapInstanceRef.current!, marker);
-        setReadyToShow(true);
-        return;
+return;
       }
       // @ts-ignore
       maps.Service.geocode({ query: address }, (status: any, response: any) => {
@@ -169,8 +165,7 @@ export function NaverMap({width = "100%",
           const bubbleHtml = addressBubbleHtml || `<div style=\"display:inline-block; padding:10px 12px; font-size:13px; font-weight:600; background:#fff; border:1px solid rgba(0,0,0,0.15); box-shadow:0 4px 12px rgba(0,0,0,0.15); border-radius:10px; color:#111; white-space:nowrap;\">${addressLabel || address}</div>`;
           const iw = new maps.InfoWindow({ content: bubbleHtml, borderWidth: 0, disableAnchor: false });
           iw.open(mapInstanceRef.current!, marker);
-        setReadyToShow(true);
-          return;
+return;
         }
         const item = response?.v2?.addresses?.[0];
         if (!item) return;
@@ -191,8 +186,7 @@ export function NaverMap({width = "100%",
         const bubbleHtml = addressBubbleHtml || `<div style=\"display:inline-block; padding:10px 12px; font-size:13px; font-weight:600; background:#fff; border:1px solid rgba(0,0,0,0.15); box-shadow:0 4px 12px rgba(0,0,0,0.15); border-radius:10px; color:#111; white-space:nowrap;\">${addressLabel || address}</div>`;
         const iw = new maps.InfoWindow({ content: bubbleHtml, borderWidth: 0, disableAnchor: false });
         iw.open(mapInstanceRef.current!, marker);
-        setReadyToShow(true);
-      });
+});
     } catch (e) {
       console.warn("Geocode error:", e);
     }
@@ -208,10 +202,10 @@ export function NaverMap({width = "100%",
     console.log('3--------------------');
 
     console.log('NaverMap: Updating center/zoom...');
-    mapInstanceRef.current.setCenter(
-      new window.naver.maps.LatLng(center.lat, center.lng)
-    );
-    mapInstanceRef.current.setZoom(zoom);
+    //mapInstanceRef.current.setCenter(
+    //  new window.naver.maps.LatLng(center.lat, center.lng)
+    //);
+    //mapInstanceRef.current.setZoom(zoom);
     console.log('NaverMap: Center/zoom updated!');
   }, [center.lat, center.lng, zoom]);
 
@@ -278,18 +272,7 @@ export function NaverMap({width = "100%",
       </div>
     );
   }
-
-  if (!readyToShow) {
-    return (
-      <div className={`flex items-center justify-center bg-gray-50 ${className}`} style={{ width, height }}>
-        <div className="text-center">
-          <p className="text-sm text-gray-600">지도 준비 중...</p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
+return (
     <div 
       ref={mapRef} 
       className={className}
