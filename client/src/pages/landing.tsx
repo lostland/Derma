@@ -11,9 +11,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Phone, MessageSquare, Settings } from "lucide-react";
+import { useLocation } from "wouter";
 
 export default function Landing() {
   const [showAdminModal, setShowAdminModal] = useState(false);
+  const [, navigate] = useLocation();
   const [adminId, setAdminId] = useState('admin');
   const [adminPw, setAdminPw] = useState('');
 
@@ -153,7 +155,7 @@ export default function Landing() {
       {/* Admin floating action button (shows near bottom) */}
       {/* Admin settings button - fixed bottom-left */}
       <button
-        onClick={() => setShowAdminModal(true)}
+        onClick={() => navigate("/admin")}
         className="fixed bottom-5 left-5 z-50 rounded-full p-3 bg-card border border-border text-primary shadow-lg hover:shadow-xl hover:bg-accent/30 transition"
         data-testid="button-admin-settings"
         aria-label="Admin settings"

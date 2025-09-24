@@ -10,7 +10,7 @@ export default function AdminPage() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await apiRequest("/api/admin/me", "GET");
+        const res = await apiRequest("GET", "/api/admin/me");
         const data = await res.json();
         if (!data?.authenticated) {
           navigate("/admin-login");

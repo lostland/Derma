@@ -10,6 +10,39 @@ import {
 export function registerRoutes(app: Express) {
   const server = createServer(app);
 
+
+  // --- Admin Auth Routes ---
+  app.post("/api/admin/login", async (req, res) => {
+    try {
+      const { username, password } = req.body || {};
+      // TODO: replace with secure storage/env validation
+      if (username === "admin" && password === "1234") {
+        res.cookie("admin_auth", "1", { httpOnly: true, sameSite: "lax", path: "/" });
+        return res.json({ success: true });
+      }
+      return res.status(401).json({ success: false, message: "Invalid credentials" });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/admin/me", async (req, res) => {
+    try {
+      const isAuthed = !!(req.cookies && req.cookies["admin_auth"] === "1");
+      res.json({ authenticated: isAuthed });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/admin/logout", async (_req, res) => {
+    try {
+      res.clearCookie("admin_auth", { path: "/" });
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
   // Inquiry routes
   app.post("/api/inquiries", async (req, res) => {
     try {
