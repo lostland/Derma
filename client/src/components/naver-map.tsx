@@ -1,205 +1,220 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-type NaverMapProps = {
-  width?: string | number;
-  height?: string | number;
-  className?: string;
-  /** fallback 초기 중심 */
-  center?: { lat: number; lng: number };
-  /** 초깃값 줌 */
-  zoom?: number;
-  /** 주소로 지오코딩해서 센터/마커/라벨 표시 */
-  address?: string;
-  addressLabel?: string;
-};
-
+// Declare naver global for TypeScript
 declare global {
   interface Window {
-    naver?: any;
-    __naverMapsLoader?: Promise<void>;
-    __naverMapsLoaderResolvers?: Array<() => void>;
+    naver: any;
+    initNaverMap?: () => void;
   }
+}
+
+interface NaverMapProps {
+  width?: string;
+  height?: string;
+  center?: {
+    lat: number;
+    lng: number;
+  };
+  zoom?: number;
+  markers?: Array<{
+    lat: number;
+    lng: number;
+    title?: string;
+    content?: string;
+  }>;
+  className?: string;
+  [key: string]: any; // Allow additional props like data-testid
 }
 
 export function NaverMap({
   width = "100%",
-  height = 360,
+  height = "400px",
+  center = { lat: 37.5137, lng: 127.0982 }, // Default to Seoul coordinates
+  zoom = 15,
+  markers = [],
   className = "",
-  center = { lat: 37.5140, lng: 127.1000 },
-  zoom = 16,
-  address,
-  addressLabel,
+  ...rest
 }: NaverMapProps) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const mapRef = useRef<any>(null);
-  const markerRef = useRef<any>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<any>(null);
+  const markersRef = useRef<any[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-  // 1) 스크립트 로딩 (중복 로딩 방지 + Promise 큐)
+  console.log('NaverMap: Rendering...');
+
   useEffect(() => {
-    let cancelled = false;
-
-    async function ensureScript() {
-      if (typeof window === "undefined") return;
-      if (window.naver?.maps) {
-        setIsLoaded(true);
-        return;
-      }
-      if (!window.__naverMapsLoader) {
-        window.__naverMapsLoaderResolvers = [];
-        window.__naverMapsLoader = new Promise<void>((resolve) => {
-          window.__naverMapsLoaderResolvers!.push(resolve);
-        });
-        const script = document.createElement("script");
-        script.id = "naver-maps-api-script";
-        // NOTE: ncpKeyId는 건드리지 않습니다.
-        script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${import.meta.env.VITE_NAVER_MAPS_KEY}&submodules=geocoder&callback=initNaverMap`;
-        script.async = true;
-        (window as any).initNaverMap = () => {
-          const resolvers = window.__naverMapsLoaderResolvers || [];
-          resolvers.forEach((r) => r());
-          window.__naverMapsLoaderResolvers = [];
-        };
-        script.onerror = () => setLoadError("네이버 지도 스크립트 로딩 실패");
-        document.head.appendChild(script);
-      }
-      try {
-        await window.__naverMapsLoader;
-        if (!cancelled) setIsLoaded(true);
-      } catch (e: any) {
-        if (!cancelled) setLoadError(e?.message || "지도 로딩 실패");
-      }
-    }
-
-    ensureScript();
-    return () => {
-      cancelled = true;
+    (window as any).navermap_authFailure = () => {
+      console.error('[NAVER] auth failure');
+      setLoadError('지도 인증에 실패했습니다. 키/도메인 설정을 확인해 주세요.');
     };
   }, []);
 
-  // 2) 지도 인스턴스 초기화 (항상 한 번만)
+  // 1) 스크립트 '한 번만' 로드
   useEffect(() => {
-    if (!isLoaded || mapRef.current || !containerRef.current) return;
-    const { naver } = window as any;
-    if (!naver?.maps) return;
-
-    const map = new naver.maps.Map(containerRef.current, {
-      center: new naver.maps.LatLng(center.lat, center.lng),
-      zoom,
-    });
-    mapRef.current = map;
-
-    // 초깃값 마커(주소가 없을 때만)
-    if (!address) {
-      markerRef.current = new naver.maps.Marker({
-        position: new naver.maps.LatLng(center.lat, center.lng),
-        map,
-      });
-      if (addressLabel) {
-        const iw = new naver.maps.InfoWindow({
-          content: `<div style="padding:8px 10px;border:1px solid rgba(0,0,0,0.15);border-radius:10px;background:#fff;font-weight:600;">${addressLabel}</div>`,
-        });
-        iw.open(map, markerRef.current);
-      }
-    }
-  }, [isLoaded, center.lat, center.lng, zoom, address, addressLabel]);
-
-  // 3) 주소가 있으면 지오코딩 → 센터/마커/라벨
-  useEffect(() => {
-    if (!isLoaded || !mapRef.current || !address) return;
-    const { naver } = window as any;
-    const maps = naver?.maps;
-    if (!maps) return;
-
-    // 기존 마커 제거
-    if (markerRef.current) {
-      markerRef.current.setMap(null);
-      markerRef.current = null;
-    }
-
-    // 알려진 주소 수동 좌표 (지오코더 500 회피)
-    const known: Record<string, { lat: number; lng: number; label?: string }> = {
-      "서울 송파구 올림픽로 102": { lat: 37.5140, lng: 127.1000, label: "올림픽로 102" },
-      "서울특별시 송파구 올림픽로 102": { lat: 37.5140, lng: 127.1000, label: "올림픽로 102" },
-    };
-    if (known[address]) {
-      const { lat, lng, label } = known[address];
-      const ll = new maps.LatLng(lat, lng);
-      mapRef.current.setCenter(ll);
-      markerRef.current = new maps.Marker({ position: ll, map: mapRef.current });
-      const iw = new maps.InfoWindow({
-        content: `<div style="padding:8px 10px;border:1px solid rgba(0,0,0,0.15);border-radius:10px;background:#fff;font-weight:600;">${addressLabel || label || address}</div>`,
-      });
-      iw.open(mapRef.current, markerRef.current);
+    if (window.naver?.maps) {
+      console.log('NaverMap: Already loaded!');
+      setIsLoaded(true);
       return;
     }
+    console.log('1--------------------');
 
-    // 정식 지오코더
-    try {
-      if (!maps.Service || !maps.Service.geocode) {
-        // 지오코더 미로딩 → 폴백: 기존 center에 마커만 찍기
-        markerRef.current = new maps.Marker({
-          position: new maps.LatLng(center.lat, center.lng),
-          map: mapRef.current,
-        });
-        return;
-      }
+    (window as any).initNaverMap = () => setIsLoaded(true);
 
-      maps.Service.geocode({ query: address }, (status: any, response: any) => {
-        try {
-          if (status !== maps.Service.Status.OK) {
-            console.warn("Geocode failed:", status, "— using fallback center.");
-            markerRef.current = new maps.Marker({
-              position: new maps.LatLng(center.lat, center.lng),
-              map: mapRef.current,
-            });
-            return;
-          }
-          const item = response?.v2?.addresses?.[0];
-          if (!item) {
-            console.warn("No geocode result — using fallback center.");
-            markerRef.current = new maps.Marker({
-              position: new maps.LatLng(center.lat, center.lng),
-              map: mapRef.current,
-            });
-            return;
-          }
-          const lat = parseFloat(item.y);
-          const lng = parseFloat(item.x);
-          const ll = new maps.LatLng(lat, lng);
-          mapRef.current.setCenter(ll);
-          markerRef.current = new maps.Marker({ position: ll, map: mapRef.current });
-          const iw = new maps.InfoWindow({
-            content: `<div style="padding:8px 10px;border:1px solid rgba(0,0,0,0.15);border-radius:10px;background:#fff;font-weight:600;">${addressLabel || address}</div>`,
-          });
-          iw.open(mapRef.current, markerRef.current);
-        } catch (err) {
-          console.warn("Geocode callback error:", err);
-          markerRef.current = new maps.Marker({
-            position: new maps.LatLng(center.lat, center.lng),
-            map: mapRef.current,
-          });
-        }
-      });
-    } catch (e) {
-      console.warn("Geocode error:", e);
-      markerRef.current = new maps.Marker({
-        position: new maps.LatLng(center.lat, center.lng),
-        map: mapRef.current,
-      });
+    // 이미 붙어있으면 재첨부 방지
+    if (document.getElementById('naver-maps-api-script')) return;
+
+    fetch('/api/naver/client-id')
+      .then(r => r.json())
+      .then(data => {
+        if (!data?.clientId) throw new Error('Missing clientId');
+        const script = document.createElement('script');
+        script.id = 'naver-maps-api-script';
+        script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${data.clientId}&callback=initNaverMap`;
+        script.async = true;
+        script.onerror = () => setLoadError('지도를 불러오는데 실패했습니다.');
+
+        console.log('[NAVER] origin=', window.location.origin);
+        console.log('[NAVER] referrer(meta)=', document.referrer);
+        console.log('[NAVER] src=', script.src);
+
+        document.head.appendChild(script);
+      })
+      .catch(() => setLoadError('지도 API 설정을 불러오는데 실패했습니다.'));
+
+    return () => {
+      delete (window as any).initNaverMap;
+      // 스크립트는 보통 유지. 필요 시에만 제거
+      // const s = document.getElementById('naver-maps-api-script');
+      // if (s) s.remove();
+    };
+  }, []);
+
+  // 2) 지도 초기화 (isLoaded가 true가 된 뒤 한 번)
+  useEffect(() => {
+    if (!isLoaded || !mapRef.current || !window.naver?.maps) 
+    {
+      console.log('2-1--------------------');
+      return;
     }
-  }, [isLoaded, address, addressLabel, center.lat, center.lng]);
+    console.log('2--------------------');
+
+    try {
+      console.log('NaverMap: Initializing map...');
+      console.log('NaverMap: mapRef.current=', mapRef.current);
+
+      const map = new window.naver.maps.Map(mapRef.current, {
+        center: new window.naver.maps.LatLng(center.lat, center.lng),
+        zoom,
+        mapTypeControl: true,
+        mapTypeControlOptions: {
+          style: window.naver.maps.MapTypeControlStyle.BUTTON,
+          position: window.naver.maps.Position.TOP_RIGHT,
+        },
+        zoomControl: true,
+        zoomControlOptions: {
+          style: window.naver.maps.ZoomControlStyle.SMALL,
+          position: window.naver.maps.Position.TOP_LEFT,
+        },
+      });
+
+      console.log('NaverMap: Map initialized!');
+
+      mapInstanceRef.current = map;
+      setLoadError(null);
+    } catch {
+      setLoadError('지도 초기화에 실패했습니다.');
+    }
+
+  }, [isLoaded]);
+
+  // 3) 중심/줌 업데이트
+  useEffect(() => {
+    if (!mapInstanceRef.current || !window.naver?.maps) 
+    {
+      console.log('3-1--------------------');
+      return;
+    }
+    console.log('3--------------------');
+
+    console.log('NaverMap: Updating center/zoom...');
+    mapInstanceRef.current.setCenter(
+      new window.naver.maps.LatLng(center.lat, center.lng)
+    );
+    mapInstanceRef.current.setZoom(zoom);
+    console.log('NaverMap: Center/zoom updated!');
+  }, [center.lat, center.lng, zoom]);
+
+  // 4) 마커 업데이트
+  useEffect(() => {
+    if (!mapInstanceRef.current || !window.naver?.maps) 
+    {
+      console.log('4-1--------------------');
+      return;
+    }
+    console.log('4--------------------');
+
+    // 기존 마커 정리
+    console.log('NaverMap: Updating markers...');
+    markersRef.current.forEach(({ marker, listener }) => {
+      if (listener) window.naver.maps.Event.removeListener(listener);
+      if (marker) marker.setMap(null);
+    });
+    markersRef.current = [];
+
+    const arr: any[] = [];
+    markers.forEach(m => {
+      const marker = new window.naver.maps.Marker({
+        position: new window.naver.maps.LatLng(m.lat, m.lng),
+        map: mapInstanceRef.current,
+        title: m.title || '',
+      });
+
+       console.log('NaverMap: Marker created!', marker)
+      // (infoWindow 처리 필요 시 여기서)
+      arr.push({ marker, listener: null });
+    });
+    markersRef.current = arr;
+  }, [markers]);
 
   if (loadError) {
+    console.error('NaverMap: Error loading map:', loadError);
     return (
-      <div className={`flex items-center justify-center bg-gray-50 ${className}`} style={{ width, height }}>
-        <p className="text-sm text-red-600">{loadError}</p>
+      <div 
+        className={`flex items-center justify-center bg-gray-100 ${className}`}
+        style={{ width, height }}
+        data-testid="map-error"
+      >
+        <div className="text-center">
+          <p className="text-red-500 mb-2">🗺️</p>
+          <p className="text-sm text-gray-600">{loadError}</p>
+        </div>
       </div>
     );
   }
 
-  return <div ref={containerRef} className={className} style={{ width, height }} />;
-}
+  if (!isLoaded) {
+    console.log('NaverMap: Loading...');
+    return (
+      <div 
+        className={`flex items-center justify-center bg-gray-100 ${className}`}
+        style={{ width, height }}
+        data-testid="map-loading"
+      >
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+          <p className="text-sm text-gray-600">지도 로딩 중...</p>
+        </div>
+      </div>
+    );
+  }
 
-export default NaverMap;
+  return (
+    <div 
+      ref={mapRef} 
+      className={className}
+      style={{ width, height }}
+      {...rest}
+    />
+  );
+}
