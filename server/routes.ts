@@ -154,5 +154,69 @@ export function registerRoutes(app: Express) {
     }
   });
 
+  // Naver Map API routes
+  app.get("/api/naver/client-id", (req, res) => {
+    try {
+      const clientId = process.env.NAVER_CLIENT_ID || "454vo4765n"; // Default fallback
+      res.json({ clientId });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/naver/reverse-geocode", async (req, res) => {
+    try {
+      const { coords } = req.query;
+      if (!coords) {
+        return res.status(400).json({ message: "coords parameter is required" });
+      }
+
+      const clientId = process.env.NAVER_CLIENT_ID || "454vo4765n";
+      const clientSecret = process.env.NAVER_CLIENT_SECRET || "";
+      
+      const response = await fetch(
+        `https://naveropenapi.apigw.ntruss.com/map-reversegeocode/v2/gc?coords=${coords}&output=json&orders=roadaddr`,
+        {
+          headers: {
+            'X-NCP-APIGW-API-KEY-ID': clientId,
+            'X-NCP-APIGW-API-KEY': clientSecret,
+          },
+        }
+      );
+
+      const data = await response.json();
+      res.json(data);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/naver/geocoding", async (req, res) => {
+    try {
+      const { query } = req.query;
+      if (!query) {
+        return res.status(400).json({ message: "query parameter is required" });
+      }
+
+      const clientId = process.env.NAVER_CLIENT_ID || "454vo4765n";
+      const clientSecret = process.env.NAVER_CLIENT_SECRET || "";
+
+      const response = await fetch(
+        `https://naveropenapi.apigw.ntruss.com/map-geocode/v2/geocode?query=${encodeURIComponent(query as string)}`,
+        {
+          headers: {
+            'X-NCP-APIGW-API-KEY-ID': clientId,
+            'X-NCP-APIGW-API-KEY': clientSecret,
+          },
+        }
+      );
+
+      const data = await response.json();
+      res.json(data);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   return server;
 }
