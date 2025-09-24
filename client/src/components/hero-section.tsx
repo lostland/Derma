@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Calendar, Phone, MessageSquare } from "lucide-react";
-import heroImage from "@assets/xw0MTtfRZ3rCjnBiosoX8_1758442035276.png";
+import clinicVideo from "@assets/clinic.mp4";
 
 interface HeroSectionProps {
   onKakaoClick: () => void;
@@ -11,11 +11,9 @@ export function HeroSection({ onKakaoClick }: HeroSectionProps) {
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image */}
       <div className="absolute inset-0">
-        <img
-          src={heroImage}
-          alt="Modern medical facility"
-          className="w-full h-full object-cover"
-        />
+        <video className="w-full h-full object-cover" autoPlay loop muted playsInline preload="metadata">
+          <source src={clinicVideo} type="video/mp4" />
+        </video>
         <div className="absolute inset-0 bg-primary/80"></div>
       </div>
 

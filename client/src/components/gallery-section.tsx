@@ -1,8 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { useEffect, useRef } from "react";
-import wating_img from "@assets/waiting.png";
-import talk_img from "@assets/talk.png";
-import laser_img from "@assets/laser.png";
+import waiting_vid from "@assets/waiting.mp4";
+import talk_vid from "@assets/talk.mp4";
+import laser_vid from "@assets/laser.mp4";
 import careroom_img from "@assets/careroom.png";
 
 /**
@@ -35,7 +35,7 @@ export function GallerySection() {
   const sections = [
     {
       title: "프리미엄 대기 공간",
-      image: wating_img,
+      media: waiting_vid,
       long:
         "첫 방문부터 쾌적함을 느낄 수 있는 프리미엄 대기 공간입니다. 자연광을 충분히 들이는 동선 설계와 소음 흡수 재질의 마감재로, 긴장감을 줄이고 편안한 대기를 돕습니다. " +
         "공간 내 동선은 휠체어 이용 고객도 불편함 없이 이동할 수 있도록 충분한 폭을 확보하였으며, 항균 소재의 가구를 사용해 위생적 환경을 유지합니다. " +
@@ -43,7 +43,7 @@ export function GallerySection() {
     },
     {
       title: "전문의 1:1 상담실",
-      image: talk_img,
+      media: talk_vid,
       long:
         "상담은 단순한 설명을 넘어, 개인 피부 타입·생활 패턴·과거 시술 이력까지 종합적으로 고려하여 최적의 계획을 수립합니다. " +
         "프라이버시가 보장되는 독립형 공간에서 진행되며, 고해상도 피부 스캐너 및 라이팅 시스템으로 미세한 질감 변화까지 확인합니다. " +
@@ -51,7 +51,7 @@ export function GallerySection() {
     },
     {
       title: "최첨단 레이저 치료실",
-      image: laser_img,
+      media: laser_vid,
       long:
         "다양한 파장대와 모드로 세분화된 장비가 구비되어 있어 색소·혈관·모공·탄력 등 문제 유형에 따른 정밀한 치료가 가능합니다. " +
         "시술 전 자동 캘리브레이션과 테스트 샷을 통해 개별 피부 반응을 확인하고, 냉각·흡입 시스템을 연동해 통증과 붓기를 최소화합니다. " +
@@ -59,7 +59,7 @@ export function GallerySection() {
     },
     {
       title: "프라이빗 케어룸",
-      image: careroom_img,
+      media: careroom_img,
       long:
         "시술 직후 케어와 진정이 이뤄지는 공간입니다. 조도와 온습도를 미세 조절해 회복에 최적화된 환경을 제공합니다. " +
         "민감 반응을 줄이는 쿨링·보습 케어와 광선 테라피가 필요에 따라 적용되며, 개인별 홈케어 루틴을 안내해 회복 속도를 높입니다. " +
@@ -86,12 +86,18 @@ export function GallerySection() {
               <h4 className="text-2xl md:text-3xl font-semibold mb-6">{s.title}</h4>
 
               <Card className="bg-card rounded-2xl shadow-sm overflow-hidden">
-                <img
-                  src={s.image}
-                  alt={s.title}
-                  className="w-full h-[260px] md:h-[360px] object-cover"
-                  loading="lazy"
-                />
+                {String(s.media).toLowerCase().endsWith(".mp4") ? (
+                  <video className="w-full h-[260px] md:h-[360px] object-cover" autoPlay loop muted playsInline preload="metadata">
+                    <source src={s.media as any} type="video/mp4" />
+                  </video>
+                ) : (
+                  <img
+                    src={s.media as any}
+                    alt={s.title}
+                    className="w-full h-[260px] md:h-[360px] object-cover"
+                    loading="lazy"
+                  />
+                )}
                 <CardContent className="p-6 md:p-8">
                   <p className="text-base md:text-lg leading-relaxed text-muted-foreground">
                     {s.long}
