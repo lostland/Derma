@@ -75,7 +75,7 @@ export function NaverMap({width = "100%",
         if (!data?.clientId) throw new Error('Missing clientId');
         const script = document.createElement('script');
         script.id = 'naver-maps-api-script';
-        script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${data.clientId}&submodules=geocoder&callback=initNaverMap`;
+        script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${data.clientId}&submodules=geocoder&callback=initNaverMap`;
         script.async = true;
         script.onerror = () => setLoadError('지도를 불러오는데 실패했습니다.');
 
