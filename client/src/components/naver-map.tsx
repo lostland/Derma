@@ -15,6 +15,8 @@ interface NaverMapProps {
     lat: number;
     lng: number;
   };
+  /** 좌표 지오코딩 실패 시 사용할 예비 좌표 */
+  fallbackCenter?: { lat: number; lng: number };
   address?: string;
   addressLabel?: string;
   addressBubbleHtml?: string;
@@ -36,7 +38,7 @@ export function NaverMap({width = "100%",
   zoom = 15,
   markers = [],
   className = "",
-  address, addressLabel, addressBubbleHtml, customMarkerHtml, ...rest
+  address, addressLabel, addressBubbleHtml, customMarkerHtml, fallbackCenter, ...rest
 }: NaverMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
@@ -73,7 +75,7 @@ export function NaverMap({width = "100%",
         if (!data?.clientId) throw new Error('Missing clientId');
         const script = document.createElement('script');
         script.id = 'naver-maps-api-script';
-        script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${data.clientId}&callback=initNaverMap`;
+        script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${data.clientId}&submodules=geocoder&callback=initNaverMap`;
         script.async = true;
         script.onerror = () => setLoadError('지도를 불러오는데 실패했습니다.');
 
@@ -139,14 +141,30 @@ export function NaverMap({width = "100%",
       const { maps } = window.naver;
       // @ts-ignore
       if (!maps.Service || !maps.Service.geocode) {
-        console.warn("Naver Maps Geocoder not available");
+        console.warn("Naver Maps Geocoder not available — using fallbackCenter or center");
+        const lat = (fallbackCenter?.lat ?? center.lat);
+        const lng = (fallbackCenter?.lng ?? center.lng);
+        const ll = new maps.LatLng(lat, lng);
+        mapInstanceRef.current!.setCenter(ll);
+        const marker = new maps.Marker({ position: ll, map: mapInstanceRef.current!, icon: customMarkerHtml ? { content: customMarkerHtml, size: new maps.Size(24, 34), anchor: new maps.Point(12, 34) } : undefined, });
+        const bubbleHtml = addressBubbleHtml || `<div style=\"display:inline-block; padding:10px 12px; font-size:13px; font-weight:600; background:#fff; border:1px solid rgba(0,0,0,0.15); box-shadow:0 4px 12px rgba(0,0,0,0.15); border-radius:10px; color:#111; white-space:nowrap;\">${addressLabel || address}</div>`;
+        const iw = new maps.InfoWindow({ content: bubbleHtml, borderWidth: 0, disableAnchor: false });
+        iw.open(mapInstanceRef.current!, marker);
         return;
       }
       // @ts-ignore
       maps.Service.geocode({ query: address }, (status: any, response: any) => {
         // @ts-ignore
         if (status !== maps.Service.Status.OK) {
-          console.warn("Geocode failed:", status);
+          console.warn("Geocode failed:", status, "— using fallbackCenter or center");
+          const lat = (fallbackCenter?.lat ?? center.lat);
+          const lng = (fallbackCenter?.lng ?? center.lng);
+          const ll = new maps.LatLng(lat, lng);
+          mapInstanceRef.current!.setCenter(ll);
+          const marker = new maps.Marker({ position: ll, map: mapInstanceRef.current!, icon: customMarkerHtml ? { content: customMarkerHtml, size: new maps.Size(24, 34), anchor: new maps.Point(12, 34) } : undefined, });
+          const bubbleHtml = addressBubbleHtml || `<div style=\"display:inline-block; padding:10px 12px; font-size:13px; font-weight:600; background:#fff; border:1px solid rgba(0,0,0,0.15); box-shadow:0 4px 12px rgba(0,0,0,0.15); border-radius:10px; color:#111; white-space:nowrap;\">${addressLabel || address}</div>`;
+          const iw = new maps.InfoWindow({ content: bubbleHtml, borderWidth: 0, disableAnchor: false });
+          iw.open(mapInstanceRef.current!, marker);
           return;
         }
         const item = response?.v2?.addresses?.[0];
