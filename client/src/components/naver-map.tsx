@@ -108,7 +108,7 @@ console.log('NaverMap: Rendering...');
       console.log('NaverMap: mapRef.current=', mapRef.current);
 
       const map = new window.naver.maps.Map(mapRef.current, {
-        //center: new window.naver.maps.LatLng(center.lat, center.lng),
+        center: new window.naver.maps.LatLng(center.lat, center.lng),
         zoom,
         mapTypeControl: true,
         mapTypeControlOptions: {
@@ -202,10 +202,10 @@ return;
     console.log('3--------------------');
 
     console.log('NaverMap: Updating center/zoom...');
-    //mapInstanceRef.current.setCenter(
-    //  new window.naver.maps.LatLng(center.lat, center.lng)
-    //);
-    //mapInstanceRef.current.setZoom(zoom);
+    mapInstanceRef.current.setCenter(
+      new window.naver.maps.LatLng(center.lat, center.lng)
+    );
+    mapInstanceRef.current.setZoom(zoom);
     console.log('NaverMap: Center/zoom updated!');
   }, [center.lat, center.lng, zoom]);
 
