@@ -17,6 +17,8 @@ interface NaverMapProps {
   };
   address?: string;
   addressLabel?: string;
+  addressBubbleHtml?: string;
+  customMarkerHtml?: string;
   zoom?: number;
   markers?: Array<{
     lat: number;
@@ -28,14 +30,13 @@ interface NaverMapProps {
   [key: string]: any; // Allow additional props like data-testid
 }
 
-export function NaverMap({
-  width = "100%",
+export function NaverMap({width = "100%",
   height = "400px",
   center = { lat: 37.5137, lng: 127.0982 }, // Default to Seoul coordinates
   zoom = 15,
   markers = [],
   className = "",
-  ...rest
+  address, addressLabel, addressBubbleHtml, customMarkerHtml, ...rest
 }: NaverMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
@@ -158,18 +159,20 @@ export function NaverMap({
         const marker = new maps.Marker({
           position: ll,
           map: mapInstanceRef.current!,
+          icon: customMarkerHtml ? {
+            content: customMarkerHtml,
+            size: new maps.Size(24, 34),
+            anchor: new maps.Point(12, 34),
+          } : undefined,
         });
-        if (addressLabel || address) {
-          const iw = new maps.InfoWindow({
-            content: `<div style="padding:6px 10px;font-size:12px;">${addressLabel || address}</div>`,
-          });
-          iw.open(mapInstanceRef.current!, marker);
-        }
+        const bubbleHtml = addressBubbleHtml || `<div style=\"display:inline-block; padding:10px 12px; font-size:13px; font-weight:600; background:#fff; border:1px solid rgba(0,0,0,0.15); box-shadow:0 4px 12px rgba(0,0,0,0.15); border-radius:10px; color:#111; white-space:nowrap;\">${addressLabel || address}</div>`;
+        const iw = new maps.InfoWindow({ content: bubbleHtml, borderWidth: 0, disableAnchor: false });
+        iw.open(mapInstanceRef.current!, marker);
       });
     } catch (e) {
       console.warn("Geocode error:", e);
     }
-  }, [isLoaded, address, addressLabel]);
+  }, [isLoaded, address, addressLabel, addressBubbleHtml, customMarkerHtml]);
 
   // 3) 중심/줌 업데이트
   useEffect(() => {
