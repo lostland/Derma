@@ -57,7 +57,7 @@ export function LocationSection() {
                     <div>
                       <p className="font-medium text-lg mb-1">지하철</p>
                       <p className="text-muted-foreground">
-                        2호선 잠실나루역 2번 출구 도보 5분
+                        2호선 잠실새내역 4번 출구 도보 5분
                       </p>
                     </div>
                   </div>
