@@ -48,7 +48,7 @@ export function LocationSection() {
                     <MapPin className="w-6 h-6 text-accent mt-1 flex-shrink-0" />
                     <div>
                       <p className="font-medium text-lg mb-1">주소</p>
-                      <p className="text-muted-foreground">서울 송파구 올림픽로 102</p>
+                      <p className="text-muted-foreground">서울 송파구 올림픽로 99</p>
                     </div>
                   </div>
 
@@ -57,7 +57,7 @@ export function LocationSection() {
                     <div>
                       <p className="font-medium text-lg mb-1">지하철</p>
                       <p className="text-muted-foreground">
-                        2호선 잠실새내역 4번 출구 도보 5분
+                        8호선 잠실나루역 2번 출구 도보 5분
                       </p>
                     </div>
                   </div>
@@ -91,19 +91,7 @@ export function LocationSection() {
           <div className="animate-fade-in">
             <Card className="h-96 overflow-hidden shadow-lg">
               <CardContent className="p-0 h-full">
-                <NaverMap
-                  width="100%"
-                  height="384px"
-                  center={{ lat: 37.5140, lng: 127.1000 }}
-                  zoom={16}
-                  markers={[{ lat: 37.5140, lng: 127.1000,
-                      title: "병원 위치",
-                      content: "<strong>병원명</strong><br/>서울 송파구 올림픽로 102<br/>2호선 잠실새내역 4번 출구 도보 5분"
-                    }
-                  ]}
-                  className="rounded-lg"
-                  data-testid="clinic-map"
-                />
+                <NaverMap width="100%" height="360px" address="서울 송파구 올림픽로 102" addressLabel="올림픽로 102" className="rounded-lg" data-testid="clinic-map" />
               </CardContent>
             </Card>
           </div>

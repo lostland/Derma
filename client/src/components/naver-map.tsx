@@ -15,6 +15,8 @@ interface NaverMapProps {
     lat: number;
     lng: number;
   };
+  address?: string;
+  addressLabel?: string;
   zoom?: number;
   markers?: Array<{
     lat: number;
@@ -49,7 +51,7 @@ export function NaverMap({
       setLoadError('지도 인증에 실패했습니다. 키/도메인 설정을 확인해 주세요.');
     };
   }, []);
-  
+
   // 1) 스크립트 '한 번만' 로드
   useEffect(() => {
     if (window.naver?.maps) {
@@ -58,7 +60,7 @@ export function NaverMap({
       return;
     }
     console.log('1--------------------');
-    
+
     (window as any).initNaverMap = () => setIsLoaded(true);
 
     // 이미 붙어있으면 재첨부 방지
@@ -77,7 +79,7 @@ export function NaverMap({
         console.log('[NAVER] origin=', window.location.origin);
         console.log('[NAVER] referrer(meta)=', document.referrer);
         console.log('[NAVER] src=', script.src);
-        
+
         document.head.appendChild(script);
       })
       .catch(() => setLoadError('지도 API 설정을 불러오는데 실패했습니다.'));
@@ -98,7 +100,7 @@ export function NaverMap({
       return;
     }
     console.log('2--------------------');
-    
+
     try {
       console.log('NaverMap: Initializing map...');
       console.log('NaverMap: mapRef.current=', mapRef.current);
@@ -117,16 +119,57 @@ export function NaverMap({
           position: window.naver.maps.Position.TOP_LEFT,
         },
       });
-      
+
       console.log('NaverMap: Map initialized!');
-      
+
       mapInstanceRef.current = map;
       setLoadError(null);
     } catch {
       setLoadError('지도 초기화에 실패했습니다.');
     }
-    
+
   }, [isLoaded]);
+
+
+  // 2.5) 주소 기반 지오코딩 (주소가 주어진 경우 중심/마커 갱신)
+  useEffect(() => {
+    if (!isLoaded || !mapInstanceRef.current || !window.naver?.maps || !address) return;
+    try {
+      const { maps } = window.naver;
+      // @ts-ignore
+      if (!maps.Service || !maps.Service.geocode) {
+        console.warn("Naver Maps Geocoder not available");
+        return;
+      }
+      // @ts-ignore
+      maps.Service.geocode({ query: address }, (status: any, response: any) => {
+        // @ts-ignore
+        if (status !== maps.Service.Status.OK) {
+          console.warn("Geocode failed:", status);
+          return;
+        }
+        const item = response?.v2?.addresses?.[0];
+        if (!item) return;
+        const lat = parseFloat(item.y);
+        const lng = parseFloat(item.x);
+        const ll = new maps.LatLng(lat, lng);
+        mapInstanceRef.current!.setCenter(ll);
+
+        const marker = new maps.Marker({
+          position: ll,
+          map: mapInstanceRef.current!,
+        });
+        if (addressLabel || address) {
+          const iw = new maps.InfoWindow({
+            content: `<div style="padding:6px 10px;font-size:12px;">${addressLabel || address}</div>`,
+          });
+          iw.open(mapInstanceRef.current!, marker);
+        }
+      });
+    } catch (e) {
+      console.warn("Geocode error:", e);
+    }
+  }, [isLoaded, address, addressLabel]);
 
   // 3) 중심/줌 업데이트
   useEffect(() => {
@@ -136,7 +179,7 @@ export function NaverMap({
       return;
     }
     console.log('3--------------------');
-    
+
     console.log('NaverMap: Updating center/zoom...');
     mapInstanceRef.current.setCenter(
       new window.naver.maps.LatLng(center.lat, center.lng)
