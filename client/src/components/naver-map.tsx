@@ -138,6 +138,11 @@ export function NaverMap({width = "100%",
   // 2.5) 주소 기반 지오코딩 (주소가 주어진 경우 중심/마커 갱신)
   useEffect(() => {
     if (!isLoaded || !mapInstanceRef.current || !window.naver?.maps || !address) return;
+    
+    console.log('address : ', address);
+    console.log('addressLabel : ', addressLabel);
+    console.log('addressBubbleHtml : ', addressBubbleHtml);
+    
     try {
       const { maps } = window.naver;
       // @ts-ignore
@@ -175,6 +180,8 @@ export function NaverMap({width = "100%",
         const ll = new maps.LatLng(lat, lng);
         mapInstanceRef.current!.setCenter(ll);
 
+        console.log('NaverMap: Geocode success!', ll);
+
         const marker = new maps.Marker({
           position: ll,
           map: mapInstanceRef.current!,
@@ -187,6 +194,8 @@ export function NaverMap({width = "100%",
         const bubbleHtml = addressBubbleHtml || `<div style=\"display:inline-block; padding:10px 12px; font-size:13px; font-weight:600; background:#fff; border:1px solid rgba(0,0,0,0.15); box-shadow:0 4px 12px rgba(0,0,0,0.15); border-radius:10px; color:#111; white-space:nowrap;\">${addressLabel || address}</div>`;
         const iw = new maps.InfoWindow({ content: bubbleHtml, borderWidth: 0, disableAnchor: false });
         iw.open(mapInstanceRef.current!, marker);
+
+        console.log('NaverMap: Marker created!', marker);
       });
     } catch (e) {
       console.warn("Geocode error:", e);
