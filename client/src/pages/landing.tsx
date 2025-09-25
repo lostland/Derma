@@ -34,8 +34,9 @@ export default function Landing() {
         throw new Error(j.message || '로그인 실패');
       }
       window.location.href = '/admin';
-    } catch (e) {
-      toast({ title: '로그인 실패', description: e.message || '아이디/비밀번호를 확인해 주세요.', variant: 'destructive' });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : undefined;
+      toast({ title: '로그인 실패', description: message || '아이디/비밀번호를 확인해 주세요.', variant: 'destructive' });
     }
   };
 

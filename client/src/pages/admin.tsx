@@ -1,4 +1,3 @@
-import { useNavigate } from "react-router-dom";
 import { AdminDashboard } from "@/components/admin-dashboard";
 import { useEffect, useState } from "react";
 import { apiRequest } from "@/lib/queryClient";
@@ -13,8 +12,7 @@ import { useTheme } from "@/context/ThemeContext";
 export default function AdminPage() {
   const { color, setColor } = useTheme();
   const [draft, setDraft] = React.useState<string>(color);
-  const navigate = useNavigate();
-  const location = useLocation();
+  const [, navigate] = useLocation();
   const [checked, setChecked] = useState(false);
 
   // Password change dialog states
