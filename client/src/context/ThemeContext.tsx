@@ -156,6 +156,19 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     root.setAttribute("data-theme", theme.id);
   }, []);
 
+  const applyThemeColor = (value: string) => {
+    if (typeof document === "undefined") return;
+    const root = document.documentElement;
+    root.style.setProperty("--theme-color", value);
+    root.style.setProperty("--accent", value);
+    root.style.setProperty("--primary", value);
+    root.style.setProperty("--ring", value);
+    root.style.setProperty("--sidebar-primary", value);
+    root.style.setProperty("--sidebar-ring", value);
+    root.style.setProperty("--sidebar-accent", value);
+    root.style.setProperty("--chart-1", value);
+  };
+
   useEffect(() => {
     try {
       const savedId = localStorage.getItem("theme-id");
@@ -170,9 +183,12 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     applyTheme(DEFAULT_THEME);
   }, [applyTheme]);
 
+
   const activeTheme = useMemo(() => THEMES.find((theme) => theme.id === themeId) ?? DEFAULT_THEME, [themeId]);
 
+
   useEffect(() => {
+
     applyTheme(activeTheme);
   }, [activeTheme, applyTheme]);
 
@@ -186,6 +202,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const nextTheme = THEMES.find((theme) => theme.id === id) ?? DEFAULT_THEME;
     setThemeId(nextTheme.id);
   }, []);
+
 
   return (
     <ThemeContext.Provider value={{ theme: activeTheme, themes: THEMES, setTheme }}>

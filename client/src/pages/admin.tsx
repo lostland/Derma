@@ -11,8 +11,10 @@ import { useTheme } from "@/context/ThemeContext";
 import { cn } from "@/lib/utils";
 
 export default function AdminPage() {
+
   const { theme, themes, setTheme } = useTheme();
   const [draft, setDraft] = useState<string>(theme.id);
+
   const [, navigate] = useLocation();
   const [checked, setChecked] = useState(false);
 
@@ -40,13 +42,17 @@ export default function AdminPage() {
   }, [navigate]);
 
   useEffect(() => {
+
     setDraft(theme.id);
   }, [theme.id]);
+
 
   if (!checked) return null;
 
   const handleApplyTheme = () => {
+
     setTheme(draft);
+
     navigate("/");
   };
 
@@ -174,6 +180,7 @@ export default function AdminPage() {
               </button>
             );
           })}
+
         </div>
       </div>
 
