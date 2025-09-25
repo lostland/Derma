@@ -71,7 +71,7 @@ export function GallerySection() {
 
   return (
     <section ref={sectionRef} className="py-20 bg-background">
-      <div className="container mx-auto px-4">
+      <div className="mx-auto w-full px-0 md:container md:mx-auto md:px-4">
         <div className="text-center mb-16 animate-fade-in">
           <h3 className="text-3xl md:text-4xl font-bold text-primary mb-4">최첨단 시설</h3>
           <p className="text-lg text-muted-foreground">안전하고 쾌적한 환경에서 제공하는 프리미엄 의료 서비스</p>
@@ -86,16 +86,23 @@ export function GallerySection() {
             >
               <h4 className="text-2xl md:text-3xl font-semibold mb-6">{s.title}</h4>
 
-              <Card className="bg-transparent shadow-none rounded-none md:bg-card md:shadow-sm md:rounded-2xl overflow-hidden">
+              <Card className="bg-transparent shadow-none rounded-none border-none md:bg-card md:shadow-sm md:rounded-2xl overflow-hidden">
                 {String(s.media).toLowerCase().endsWith(".mp4") ? (
-                  <video className="w-full h-[260px] md:h-[360px] object-cover" autoPlay loop muted playsInline preload="metadata">
+                  <video
+                    className="block w-full h-[260px] md:h-[360px] object-cover"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    preload="metadata"
+                  >
                     <source src={s.media as any} type="video/mp4" />
                   </video>
                 ) : (
                   <img
                     src={s.media as any}
                     alt={s.title}
-                    className="w-full h-[260px] md:h-[360px] object-cover"
+                    className="block w-full h-[260px] md:h-[360px] object-cover"
                     loading="lazy"
                   />
                 )}
