@@ -91,7 +91,7 @@ export function LocationSection() {
           <div className="animate-fade-in">
             <Card className="h-96 overflow-hidden shadow-lg">
               <CardContent className="p-0 h-full">
-                <NaverMap width="100%" height="360px" address="서울 송파구 올림픽로 102" addressLabel="올림픽로 102" className="rounded-lg" data-testid="clinic-map" />
+                <NaverMap width="100%" height="360px" address="서울 송파구 올림픽로 102" addressLabel="서울 안티에이징 피부과" className="rounded-lg" data-testid="clinic-map" />
               </CardContent>
             </Card>
           </div>
