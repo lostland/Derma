@@ -8,24 +8,6 @@ import {
   useState,
 } from "react";
 
-function captureFrame(video: HTMLVideoElement) {
-  if (!video.videoWidth || !video.videoHeight) return undefined;
-
-  const canvas = document.createElement("canvas");
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-  const context = canvas.getContext("2d");
-  if (!context) return undefined;
-
-  context.drawImage(video, 0, 0, canvas.width, canvas.height);
-  try {
-    return canvas.toDataURL("image/jpeg", 0.92);
-  } catch (error) {
-    console.warn("Failed to capture video frame", error);
-    return undefined;
-  }
-}
-
 type VideoWithPreviewProps = Omit<ComponentPropsWithoutRef<"video">, "children" | "poster"> & {
   /**
    * Video source url.
@@ -39,7 +21,43 @@ type VideoWithPreviewProps = Omit<ComponentPropsWithoutRef<"video">, "children" 
    * Optional alt text for the generated preview image.
    */
   previewAlt?: string;
+  /**
+   * Explicit preview image source. When omitted, the component attempts to
+   * locate an image with the same base name and a `.jpg` extension.
+   */
+  posterSrc?: string;
 };
+
+type PosterModule = { default: string } | string;
+
+const posterModules = import.meta.glob<PosterModule>("@assets/*.jpg", {
+  eager: true,
+});
+
+const posterByBasename = Object.entries(posterModules).reduce<Record<string, string>>(
+  (acc, [path, module]) => {
+    const fileName = path.split("/").pop();
+    if (!fileName) return acc;
+
+    const base = fileName.replace(/\.[^.]+$/, "");
+    acc[base] = typeof module === "string" ? module : module.default;
+    return acc;
+  },
+  {}
+);
+
+function getPosterFromSrc(src: string) {
+  const fileNameWithHash = src.split("/").pop();
+  if (!fileNameWithHash) return undefined;
+
+  const withoutQuery = fileNameWithHash.split(/[?#]/)[0] ?? fileNameWithHash;
+  const withoutExtension = withoutQuery.replace(/\.[^.]+$/, "");
+  const [base] = withoutExtension.split("-");
+
+  if (!base) return undefined;
+
+  return posterByBasename[base];
+}
 
 /**
  * Video component that keeps a preview frame visible when the video is waiting or stalled.
@@ -53,6 +71,7 @@ export function VideoWithPreview({
   loop = true,
   muted = true,
   playsInline = true,
+  posterSrc,
   onLoadedData,
   onCanPlay,
   onPlaying,
@@ -62,121 +81,80 @@ export function VideoWithPreview({
   ...videoProps
 }: VideoWithPreviewProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [preview, setPreview] = useState<string>();
-  const [showPreview, setShowPreview] = useState(true);
-
-  // Reset preview when the source changes.
-  useEffect(() => {
-    setPreview(undefined);
-    setShowPreview(true);
-  }, [src]);
+  const resolvedPoster = useMemo(() => posterSrc ?? getPosterFromSrc(src), [posterSrc, src]);
+  const [showPreview, setShowPreview] = useState(Boolean(resolvedPoster));
 
   useEffect(() => {
+    setShowPreview(Boolean(resolvedPoster));
+  }, [resolvedPoster, src]);
+
+  const handleLoadedData = (event: SyntheticEvent<HTMLVideoElement, Event>) => {
+    onLoadedData?.(event);
+  };
+
+  const handleCanPlay = (event: SyntheticEvent<HTMLVideoElement, Event>) => {
     const videoElement = videoRef.current;
-    if (!videoElement) return;
-
-    const ensurePreview = () => {
-      if (!preview) {
-        const frame = captureFrame(videoElement);
-        if (frame) {
-          setPreview(frame);
-        }
-      }
-    };
-
-    const toSynthetic = (event: Event) => event as unknown as SyntheticEvent<HTMLVideoElement, Event>;
-
-    const handleLoadedData = (event: Event) => {
-      ensurePreview();
-      onLoadedData?.(toSynthetic(event));
-    };
-
-    const handleCanPlay = (event: Event) => {
-      ensurePreview();
-      setShowPreview(videoElement.paused);
-      onCanPlay?.(toSynthetic(event));
-    };
-
-    const handlePlaying = (event: Event) => {
-      setShowPreview(false);
-      onPlaying?.(toSynthetic(event));
-    };
-
-    const handleWaiting = (event: Event) => {
-      ensurePreview();
-      setShowPreview(true);
-      onWaiting?.(toSynthetic(event));
-    };
-
-    const handleStalled = (event: Event) => {
-      ensurePreview();
-      setShowPreview(true);
-      onStalled?.(toSynthetic(event));
-    };
-
-    const handleError = (event: Event) => {
-      ensurePreview();
-      setShowPreview(true);
-      onError?.(toSynthetic(event));
-    };
-
-    videoElement.addEventListener("loadeddata", handleLoadedData);
-    videoElement.addEventListener("canplay", handleCanPlay);
-    videoElement.addEventListener("playing", handlePlaying);
-    videoElement.addEventListener("waiting", handleWaiting);
-    videoElement.addEventListener("stalled", handleStalled);
-    videoElement.addEventListener("error", handleError);
-
-    return () => {
-      videoElement.removeEventListener("loadeddata", handleLoadedData);
-      videoElement.removeEventListener("canplay", handleCanPlay);
-      videoElement.removeEventListener("playing", handlePlaying);
-      videoElement.removeEventListener("waiting", handleWaiting);
-      videoElement.removeEventListener("stalled", handleStalled);
-      videoElement.removeEventListener("error", handleError);
-    };
-  }, [onCanPlay, onError, onLoadedData, onPlaying, onStalled, onWaiting, preview, src]);
-
-  useEffect(() => {
-    const videoElement = videoRef.current;
-    if (!videoElement) return;
-
-    if (autoPlay) {
+    if (autoPlay && videoElement) {
       const playPromise = videoElement.play();
       if (playPromise?.catch) {
         playPromise.catch(() => {
-          // Keep the preview visible when autoplay is not allowed.
-          setShowPreview(true);
+          setShowPreview(Boolean(resolvedPoster));
         });
       }
     }
-  }, [autoPlay, src]);
+    onCanPlay?.(event);
+  };
 
-  const previewImage = useMemo(() => {
-    if (!preview) return null;
-    return (
-      <img
-        aria-hidden
-        alt={previewAlt}
-        src={preview}
-        className={cn(
-          "pointer-events-none absolute inset-0 h-full w-full object-cover transition-opacity duration-300",
-          showPreview ? "opacity-100" : "opacity-0"
-        )}
-      />
-    );
-  }, [preview, previewAlt, showPreview]);
+  const handlePlaying = (event: SyntheticEvent<HTMLVideoElement, Event>) => {
+    setShowPreview(false);
+    onPlaying?.(event);
+  };
+
+  const handleWaiting = (event: SyntheticEvent<HTMLVideoElement, Event>) => {
+    setShowPreview(Boolean(resolvedPoster));
+    onWaiting?.(event);
+  };
+
+  const handleStalled = (event: SyntheticEvent<HTMLVideoElement, Event>) => {
+    setShowPreview(Boolean(resolvedPoster));
+    onStalled?.(event);
+  };
+
+  const handleError = (event: SyntheticEvent<HTMLVideoElement, Event>) => {
+    setShowPreview(Boolean(resolvedPoster));
+    onError?.(event);
+  };
 
   return (
     <div className="relative h-full w-full overflow-hidden">
-      {previewImage}
+      {resolvedPoster ? (
+        <img
+          aria-hidden
+          alt={previewAlt}
+          src={resolvedPoster}
+          className={cn(
+            "pointer-events-none absolute inset-0 h-full w-full object-cover transition-opacity duration-300",
+            showPreview ? "opacity-100" : "opacity-0"
+          )}
+        />
+      ) : null}
       <video
         ref={videoRef}
-        className={cn("relative z-10 h-full w-full object-cover", className)}
+        className={cn(
+          "relative z-10 h-full w-full object-cover transition-opacity duration-300",
+          resolvedPoster && showPreview ? "opacity-0" : "opacity-100",
+          className
+        )}
         muted={muted}
         loop={loop}
         playsInline={playsInline}
         autoPlay={autoPlay}
+        onLoadedData={handleLoadedData}
+        onCanPlay={handleCanPlay}
+        onPlaying={handlePlaying}
+        onWaiting={handleWaiting}
+        onStalled={handleStalled}
+        onError={handleError}
         {...videoProps}
       >
         <source src={src} type={type} />
