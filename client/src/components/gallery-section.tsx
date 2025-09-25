@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 import waiting_vid from "@assets/waiting.mp4";
 import talk_vid from "@assets/talk.mp4";
 import laser_vid from "@assets/laser.mp4";
-import careroom_img from "@assets/careroom.png";
+import careroom_vid from "@assets/careroom.mp4";
 
 /**
  * GallerySection
@@ -59,7 +59,7 @@ export function GallerySection() {
     },
     {
       title: "프라이빗 케어룸",
-      media: careroom_img,
+      media: careroom_vid,
       long:
         "시술 직후 케어와 진정이 이뤄지는 공간입니다. 조도와 온습도를 미세 조절해 회복에 최적화된 환경을 제공합니다. " +
         "민감 반응을 줄이는 쿨링·보습 케어와 광선 테라피가 필요에 따라 적용되며, 개인별 홈케어 루틴을 안내해 회복 속도를 높입니다. " +

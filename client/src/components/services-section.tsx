@@ -1,8 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { useEffect, useRef } from "react";
-import lift_img from "@assets/lift.png";
-import anti_img from "@assets/anti.png";
-import re_img from "@assets/re.png";
+import lift_img from "@assets/lift.mp4";
+import anti_img from "@assets/anti.mp4";
+import re_img from "@assets/re.mp4";
 
 export function ServicesSection() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -30,17 +30,17 @@ export function ServicesSection() {
 
   const services = [
     {
-      image: anti_img,
+      media: anti_img,
       title: "안티에이징",
       description: "주름 개선, 탄력 증진을 위한 전문적인 안티에이징 치료",
     },
     {
-      image: re_img,
+      media: re_img,
       title: "피부재생",
       description: "손상된 피부의 재생과 회복을 돕는 첨단 치료법",
     },
     {
-      image: lift_img,
+      media: lift_img,
       title: "피부 리프팅",
       description: "피부의 탄력과 주름을 개선",
     },
@@ -71,11 +71,13 @@ export function ServicesSection() {
             >
               {/* 카드 전체를 채우는 이미지 */}
               <div className="w-full h-48 md:h-64">
-                <img
-                  src={service.image}
-                  alt={service.title}
-                  className="w-full h-full object-cover"
-                />
+                {String(service.media).toLowerCase().endsWith(".mp4") ? (
+                  <video className="w-full h-full object-cover" autoPlay loop muted playsInline preload="metadata">
+                    <source src={service.media as any} type="video/mp4" />
+                  </video>
+                ) : (
+                  <img src={service.media as any} alt={service.title} className="w-full h-full object-cover" />
+                )}
               </div>
 
               <CardContent className="p-6">
