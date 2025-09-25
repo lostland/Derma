@@ -11,7 +11,7 @@ import { useTheme } from "@/context/ThemeContext";
 
 export default function AdminPage() {
   const { color, setColor } = useTheme();
-  const [draft, setDraft] = React.useState<string>(color);
+  const [draft, setDraft] = useState<string>(color);
   const [, navigate] = useLocation();
   const [checked, setChecked] = useState(false);
 
@@ -38,7 +38,16 @@ export default function AdminPage() {
     })();
   }, [navigate]);
 
+  useEffect(() => {
+    setDraft(color);
+  }, [color]);
+
   if (!checked) return null;
+
+  const handleApplyTheme = () => {
+    setColor(draft);
+    navigate("/");
+  };
 
   const onSubmitChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -137,16 +146,21 @@ export default function AdminPage() {
           />
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-600">현재 선택</span>
-            <span className="px-2 py-1 rounded border" style={{ background: draft, color: '#fff' }}>{draft}</span>
+            <span
+              className="px-2 py-1 rounded border"
+              style={{ background: draft, color: "#fff" }}
+            >
+              {draft}
+            </span>
           </div>
-          <button
-            className="ml-auto px-4 py-2 rounded-lg bg-theme text-white font-medium shadow hover:opacity-90 transition"
-            onClick={() => { setColor(draft); try { localStorage.setItem('theme-color', draft); } catch (e) {}; navigate('/'); }}
+          <Button
+            className="ml-auto min-w-[120px] text-white"
+            style={{ backgroundColor: draft, borderColor: draft }}
+            onClick={handleApplyTheme}
           >
             테마 적용
-          </button>
+          </Button>
         </div>
-        <p className="text-xs text-gray-500 mt-2">버튼을 누르면 테마가 적용되고 랜딩 페이지로 이동합니다.</p>
       </div>
 
 </div>
