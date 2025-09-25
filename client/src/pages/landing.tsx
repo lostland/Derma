@@ -76,7 +76,7 @@ export default function Landing() {
           <div className="h-16 md:h-20 flex items-center justify-center"><img src={logoImage} alt="서울 안티에이징 피부과 의원" className="max-h-full object-contain mx-auto" /></div>
           <div className="flex items-center space-x-4">
 
-            <div className="hidden md:flex items-center space-x-2 text-primary font-medium">
+            <div className="hidden md:flex items-center space-x-2 text-theme font-medium">
               <Phone className="w-4 h-4" />
               <span>010-1234-5678</span>
             </div>
@@ -125,7 +125,7 @@ export default function Landing() {
       <Dialog open={showAdminModal} onOpenChange={setShowAdminModal}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-primary">관리자 로그인</DialogTitle>
+            <DialogTitle className="text-theme">관리자 로그인</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="grid gap-2">
@@ -155,7 +155,7 @@ export default function Landing() {
       {/* Admin settings button - fixed bottom-left */}
       <button
         onClick={() => navigate("/admin")}
-        className="fixed bottom-5 left-5 z-50 rounded-full p-3 bg-card border border-border text-primary shadow-lg hover:shadow-xl hover:bg-accent/30 transition"
+        className="fixed bottom-5 left-5 z-50 rounded-full p-3 bg-card border border-border text-theme shadow-lg hover:shadow-xl hover:bg-accent/30 transition"
         data-testid="button-admin-settings"
         aria-label="Admin settings"
         title="Admin"

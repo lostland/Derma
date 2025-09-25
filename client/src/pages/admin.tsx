@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { AdminDashboard } from "@/components/admin-dashboard";
 import { useEffect, useState } from "react";
 import { apiRequest } from "@/lib/queryClient";
@@ -7,8 +8,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+import { useTheme } from "@/context/ThemeContext";
+
 export default function AdminPage() {
-  const [, navigate] = useLocation();
+  const { color, setColor } = useTheme();
+  const [draft, setDraft] = React.useState<string>(color);
+  const navigate = useNavigate();
+  const location = useLocation();
   const [checked, setChecked] = useState(false);
 
   // Password change dialog states
@@ -119,6 +125,32 @@ export default function AdminPage() {
           </form>
         </DialogContent>
       </Dialog>
-    </div>
+
+      {/* Theme Color Config */}
+      <div className="mt-6 p-4 border rounded-xl bg-white shadow-sm">
+        <h3 className="text-lg font-semibold mb-3">테마 색상 설정</h3>
+        <div className="flex items-center gap-4">
+          <input
+            type="color"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            className="w-12 h-12 border rounded cursor-pointer"
+            title="테마 색상 선택"
+          />
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600">현재 선택</span>
+            <span className="px-2 py-1 rounded border" style={{ background: draft, color: '#fff' }}>{draft}</span>
+          </div>
+          <button
+            className="ml-auto px-4 py-2 rounded-lg bg-theme text-white font-medium shadow hover:opacity-90 transition"
+            onClick={() => { setColor(draft); try { localStorage.setItem('theme-color', draft); } catch (e) {}; navigate('/'); }}
+          >
+            테마 적용
+          </button>
+        </div>
+        <p className="text-xs text-gray-500 mt-2">버튼을 누르면 테마가 적용되고 랜딩 페이지로 이동합니다.</p>
+      </div>
+
+</div>
   );
 }
