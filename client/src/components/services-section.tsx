@@ -52,7 +52,7 @@ export function ServicesSection() {
       className="py-20 bg-secondary"
       data-testid="section-services"
     >
-      <div className="container mx-auto px-4">
+      <div className="mx-auto w-full px-0 md:container md:mx-auto md:px-4">
         <div className="text-center mb-16 animate-fade-in">
           <h3 className="text-3xl md:text-4xl font-bold text-primary mb-4">
             전문 진료 분야
@@ -66,17 +66,24 @@ export function ServicesSection() {
           {services.map((service, index) => (
             <Card
               key={index}
-              className="overflow-hidden transition-all animate-fade-in rounded-none border-none bg-transparent shadow-none backdrop-blur-0 md:rounded-2xl md:border md:border-border/50 md:bg-card md:shadow-xl md:hover:shadow-2xl md:backdrop-blur-sm"
+              className="overflow-hidden transition-all animate-fade-in rounded-none border-none bg-transparent shadow-none backdrop-blur-0 md:rounded-2xl md:bg-card md:shadow-xl md:hover:shadow-2xl md:backdrop-blur-sm"
               data-testid={`card-service-${index}`}
             >
               {/* 카드 전체를 채우는 이미지 */}
               <div className="w-full h-48 md:h-64">
                 {String(service.media).toLowerCase().endsWith(".mp4") ? (
-                  <video className="w-full h-full object-cover" autoPlay loop muted playsInline preload="metadata">
+                  <video
+                    className="block w-full h-full object-cover"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    preload="metadata"
+                  >
                     <source src={service.media as any} type="video/mp4" />
                   </video>
                 ) : (
-                  <img src={service.media as any} alt={service.title} className="w-full h-full object-cover" />
+                  <img src={service.media as any} alt={service.title} className="block w-full h-full object-cover" />
                 )}
               </div>
               <CardContent className="px-0 py-6 md:p-6">
