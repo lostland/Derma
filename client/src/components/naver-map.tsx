@@ -127,7 +127,7 @@ export function NaverMap({width = "100%",
 
       mapInstanceRef.current = map;
       setLoadError(null);
-    if (!infoWindowRef.current) { infoWindowRef.current = new naver.maps.InfoWindow(); }
+      //if (!infoWindowRef.current) { infoWindowRef.current = new naver.maps.InfoWindow(); }
     } catch {
       setLoadError('지도 초기화에 실패했습니다.');
     }
