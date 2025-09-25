@@ -188,8 +188,8 @@ export function NaverMap({width = "100%",
       console.log('NaverMap: addressLabel=', addressLabel);
 
       maps.Service.geocode({
-        query: address
-      }, function(status, response) {
+        query: '올림픽로 102'
+      }, function(status : any, response : any) {
         if (status === maps.Service.Status.ERROR) {
             return alert('Something Wrong!');
         }
