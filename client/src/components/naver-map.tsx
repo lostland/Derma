@@ -15,6 +15,12 @@ interface NaverMapProps {
     lat: number;
     lng: number;
   };
+  /** 좌표 지오코딩 실패 시 사용할 예비 좌표 */
+  fallbackCenter?: { lat: number; lng: number };
+  address?: string;
+  addressLabel?: string;
+  addressBubbleHtml?: string;
+  customMarkerHtml?: string;
   zoom?: number;
   markers?: Array<{
     lat: number;
@@ -26,14 +32,13 @@ interface NaverMapProps {
   [key: string]: any; // Allow additional props like data-testid
 }
 
-export function NaverMap({
-  width = "100%",
+export function NaverMap({width = "100%",
   height = "400px",
   center = { lat: 37.5137, lng: 127.0982 }, // Default to Seoul coordinates
   zoom = 15,
   markers = [],
   className = "",
-  ...rest
+  address, addressLabel, addressBubbleHtml, customMarkerHtml, fallbackCenter, ...rest
 }: NaverMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
@@ -62,7 +67,7 @@ export function NaverMap({
     (window as any).initNaverMap = () => setIsLoaded(true);
 
     // 이미 붙어있으면 재첨부 방지
-    //if (document.getElementById('naver-maps-api-script')) return;
+    if (document.getElementById('naver-maps-api-script')) return;
 
     fetch('/api/naver/client-id')
       .then(r => r.json())
@@ -70,7 +75,7 @@ export function NaverMap({
         if (!data?.clientId) throw new Error('Missing clientId');
         const script = document.createElement('script');
         script.id = 'naver-maps-api-script';
-        script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${data.clientId}&callback=initNaverMap`;
+        script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${data.clientId}&submodules=geocoder&callback=initNaverMap`;
         script.async = true;
         script.onerror = () => setLoadError('지도를 불러오는데 실패했습니다.');
 
@@ -122,11 +127,71 @@ export function NaverMap({
 
       mapInstanceRef.current = map;
       setLoadError(null);
+    if (!infoWindowRef.current) { infoWindowRef.current = new naver.maps.InfoWindow(); }
     } catch {
       setLoadError('지도 초기화에 실패했습니다.');
     }
 
   }, [isLoaded]);
+
+
+  // 2.5) 주소 기반 지오코딩 (주소가 주어진 경우 중심/마커 갱신)
+  useEffect(() => {
+    if (!isLoaded || !mapInstanceRef.current || !window.naver?.maps || !address) return;
+    try {
+      const { maps } = window.naver;
+      // @ts-ignore
+      if (!maps.Service || !maps.Service.geocode) {
+        console.warn("Naver Maps Geocoder not available — using fallbackCenter or center");
+        const lat = (fallbackCenter?.lat ?? center.lat);
+        const lng = (fallbackCenter?.lng ?? center.lng);
+        const ll = new maps.LatLng(lat, lng);
+        mapInstanceRef.current!.setCenter(ll);
+        const marker = new maps.Marker({ position: ll, map: mapInstanceRef.current!, icon: customMarkerHtml ? { content: customMarkerHtml, size: new maps.Size(24, 34), anchor: new maps.Point(12, 34) } : undefined, });
+        const bubbleHtml = addressBubbleHtml || `<div style=\"display:inline-block; padding:10px 12px; font-size:13px; font-weight:600; background:#fff; border:1px solid rgba(0,0,0,0.15); box-shadow:0 4px 12px rgba(0,0,0,0.15); border-radius:10px; color:#111; white-space:nowrap;\">${addressLabel || address}</div>`;
+        const iw = new maps.InfoWindow({ content: bubbleHtml, borderWidth: 0, disableAnchor: false });
+        iw.open(mapInstanceRef.current!, marker);
+        return;
+      }
+      // @ts-ignore
+      maps.Service.geocode({ query: address }, (status: any, response: any) => {
+        // @ts-ignore
+        if (status !== maps.Service.Status.OK) {
+          console.warn("Geocode failed:", status, "— using fallbackCenter or center");
+          const lat = (fallbackCenter?.lat ?? center.lat);
+          const lng = (fallbackCenter?.lng ?? center.lng);
+          const ll = new maps.LatLng(lat, lng);
+          mapInstanceRef.current!.setCenter(ll);
+          const marker = new maps.Marker({ position: ll, map: mapInstanceRef.current!, icon: customMarkerHtml ? { content: customMarkerHtml, size: new maps.Size(24, 34), anchor: new maps.Point(12, 34) } : undefined, });
+          const bubbleHtml = addressBubbleHtml || `<div style=\"display:inline-block; padding:10px 12px; font-size:13px; font-weight:600; background:#fff; border:1px solid rgba(0,0,0,0.15); box-shadow:0 4px 12px rgba(0,0,0,0.15); border-radius:10px; color:#111; white-space:nowrap;\">${addressLabel || address}</div>`;
+          const iw = new maps.InfoWindow({ content: bubbleHtml, borderWidth: 0, disableAnchor: false });
+          iw.open(mapInstanceRef.current!, marker);
+          return;
+        }
+        const item = response?.v2?.addresses?.[0];
+        if (!item) return;
+        const lat = parseFloat(item.y);
+        const lng = parseFloat(item.x);
+        const ll = new maps.LatLng(lat, lng);
+        mapInstanceRef.current!.setCenter(ll);
+
+        const marker = new maps.Marker({
+          position: ll,
+          map: mapInstanceRef.current!,
+          icon: customMarkerHtml ? {
+            content: customMarkerHtml,
+            size: new maps.Size(24, 34),
+            anchor: new maps.Point(12, 34),
+          } : undefined,
+        });
+        const bubbleHtml = addressBubbleHtml || `<div style=\"display:inline-block; padding:10px 12px; font-size:13px; font-weight:600; background:#fff; border:1px solid rgba(0,0,0,0.15); box-shadow:0 4px 12px rgba(0,0,0,0.15); border-radius:10px; color:#111; white-space:nowrap;\">${addressLabel || address}</div>`;
+        const iw = new maps.InfoWindow({ content: bubbleHtml, borderWidth: 0, disableAnchor: false });
+        iw.open(mapInstanceRef.current!, marker);
+      });
+    } catch (e) {
+      console.warn("Geocode error:", e);
+    }
+  }, [isLoaded, address, addressLabel, addressBubbleHtml, customMarkerHtml]);
 
   // 3) 중심/줌 업데이트
   useEffect(() => {
