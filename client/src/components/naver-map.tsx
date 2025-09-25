@@ -32,6 +32,36 @@ interface NaverMapProps {
   [key: string]: any; // Allow additional props like data-testid
 }
 
+
+  // --- Robust geocode helper with retries for flaky 500/invalid JSON ---
+  async function geocodeWithRetry(maps: any, query: string, attempts: number = 3, delayMs: number = 250): Promise<any | null> {
+    function once(): Promise<any | null> {
+      return new Promise((resolve) => {
+        try {
+          maps.Service.geocode({ query }, (status: any, response: any) => {
+            try {
+              if (status === maps.Service.Status.OK && response?.v2?.addresses?.length) {
+                resolve(response.v2.addresses[0]);
+              } else {
+                resolve(null);
+              }
+            } catch (_) {
+              resolve(null);
+            }
+          });
+        } catch (_) {
+          resolve(null);
+        }
+      });
+    }
+    for (let i = 0; i < attempts; i++) {
+      const res = await once();
+      if (res) return res;
+      if (i < attempts - 1) await new Promise(r => setTimeout(r, delayMs * (i + 1)));
+    }
+    return null;
+  }
+
 export function NaverMap({width = "100%",
   height = "400px",
   center = { lat: 37.5137, lng: 127.0982 }, // Default to Seoul coordinates
@@ -127,7 +157,6 @@ export function NaverMap({width = "100%",
 
       mapInstanceRef.current = map;
       setLoadError(null);
-      //if (!infoWindowRef.current) { infoWindowRef.current = new naver.maps.InfoWindow(); }
     } catch {
       setLoadError('지도 초기화에 실패했습니다.');
     }
@@ -138,11 +167,6 @@ export function NaverMap({width = "100%",
   // 2.5) 주소 기반 지오코딩 (주소가 주어진 경우 중심/마커 갱신)
   useEffect(() => {
     if (!isLoaded || !mapInstanceRef.current || !window.naver?.maps || !address) return;
-    
-    console.log('address : ', address);
-    console.log('addressLabel : ', addressLabel);
-    console.log('addressBubbleHtml : ', addressBubbleHtml);
-    
     try {
       const { maps } = window.naver;
       // @ts-ignore
@@ -158,6 +182,12 @@ export function NaverMap({width = "100%",
         iw.open(mapInstanceRef.current!, marker);
         return;
       }
+
+      console.log('NaverMap: Geocoding address...');
+      console.log('NaverMap: address=', address);
+      console.log('NaverMap: addressLabel=', addressLabel);
+
+      
       // @ts-ignore
       maps.Service.geocode({ query: address }, (status: any, response: any) => {
         // @ts-ignore
@@ -194,8 +224,6 @@ export function NaverMap({width = "100%",
         const bubbleHtml = addressBubbleHtml || `<div style=\"display:inline-block; padding:10px 12px; font-size:13px; font-weight:600; background:#fff; border:1px solid rgba(0,0,0,0.15); box-shadow:0 4px 12px rgba(0,0,0,0.15); border-radius:10px; color:#111; white-space:nowrap;\">${addressLabel || address}</div>`;
         const iw = new maps.InfoWindow({ content: bubbleHtml, borderWidth: 0, disableAnchor: false });
         iw.open(mapInstanceRef.current!, marker);
-
-        console.log('NaverMap: Marker created!', marker);
       });
     } catch (e) {
       console.warn("Geocode error:", e);
