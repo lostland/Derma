@@ -38,6 +38,7 @@
   --sidebar-accent-foreground: hsl(0, 0%, 98%);
   --sidebar-border: hsl(214, 32%, 91%);
   --sidebar-ring: hsl(217, 91%, 35%);
+  --theme-color: #3b82f6;
   --font-sans: 'Noto Sans KR', sans-serif;
   --font-serif: Georgia, serif;
   --font-mono: Menlo, monospace;
@@ -86,5 +87,21 @@
   .animate-fade-in.visible {
     opacity: 1;
     transform: translateY(0);
+  }
+
+  .bg-theme {
+    background-color: var(--theme-color);
+  }
+
+  .text-theme {
+    color: var(--theme-color);
+  }
+
+  .border-theme {
+    border-color: var(--theme-color);
+  }
+
+  .ring-theme {
+    --tw-ring-color: var(--theme-color);
   }
 }

@@ -10,6 +10,19 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [color, setColor] = useState<string>("#3b82f6"); // default primary
 
+  const applyThemeColor = (value: string) => {
+    if (typeof document === "undefined") return;
+    const root = document.documentElement;
+    root.style.setProperty("--theme-color", value);
+    root.style.setProperty("--accent", value);
+    root.style.setProperty("--primary", value);
+    root.style.setProperty("--ring", value);
+    root.style.setProperty("--sidebar-primary", value);
+    root.style.setProperty("--sidebar-ring", value);
+    root.style.setProperty("--sidebar-accent", value);
+    root.style.setProperty("--chart-1", value);
+  };
+
   useEffect(() => {
     try {
       const saved = localStorage.getItem("theme-color");
@@ -20,15 +33,12 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const update = (c: string) => {
     setColor(c);
     try { localStorage.setItem("theme-color", c); } catch {}
-    // also reflect to CSS var
-    const root = document.documentElement;
-    root.style.setProperty("--theme-color", c);
+    applyThemeColor(c);
   };
 
   // keep CSS variable synced (first render too)
   useEffect(() => {
-    const root = document.documentElement;
-    root.style.setProperty("--theme-color", color);
+    applyThemeColor(color);
   }, [color]);
 
   return (
