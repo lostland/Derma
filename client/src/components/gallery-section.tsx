@@ -85,7 +85,9 @@ export function GallerySection() {
               key={idx}
               className="animate-fade-in"
             >
-              <h4 className="text-2xl md:text-3xl font-semibold mb-6">{s.title}</h4>
+              <h4 className="text-2xl md:text-3xl font-semibold mb-6 text-center">
+                {s.title}
+              </h4>
 
               <Card className="bg-transparent shadow-none rounded-none border-none md:bg-card md:shadow-sm md:rounded-2xl overflow-hidden">
                 {String(s.media).toLowerCase().endsWith(".mp4") ? (
