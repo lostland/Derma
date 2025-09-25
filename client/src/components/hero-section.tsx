@@ -1,3 +1,4 @@
+import { VideoWithPreview } from "@/components/video-with-preview";
 import { Button } from "@/components/ui/button";
 import { Calendar, Phone, MessageSquare } from "lucide-react";
 import clinicVideo from "@assets/clinic.mp4";
@@ -11,9 +12,15 @@ export function HeroSection({ onKakaoClick }: HeroSectionProps) {
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image */}
       <div className="absolute inset-0">
-        <video className="w-full h-full object-cover" autoPlay loop muted playsInline preload="metadata">
-          <source src={clinicVideo} type="video/mp4" />
-        </video>
+        <VideoWithPreview
+          src={clinicVideo}
+          className="h-full w-full object-cover"
+          muted
+          loop
+          playsInline
+          preload="auto"
+          aria-hidden
+        />
         <div className="absolute inset-0 bg-primary/80"></div>
       </div>
 
