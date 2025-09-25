@@ -86,7 +86,7 @@ export function GallerySection() {
             >
               <h4 className="text-2xl md:text-3xl font-semibold mb-6">{s.title}</h4>
 
-              <Card className="bg-card rounded-2xl shadow-sm overflow-hidden">
+              <Card className="bg-transparent shadow-none rounded-none md:bg-card md:shadow-sm md:rounded-2xl overflow-hidden">
                 {String(s.media).toLowerCase().endsWith(".mp4") ? (
                   <video className="w-full h-[260px] md:h-[360px] object-cover" autoPlay loop muted playsInline preload="metadata">
                     <source src={s.media as any} type="video/mp4" />
@@ -99,7 +99,7 @@ export function GallerySection() {
                     loading="lazy"
                   />
                 )}
-                <CardContent className="p-6 md:p-8">
+                <CardContent className="p-0 pt-6 md:p-8">
                   <p className="text-base md:text-lg leading-relaxed text-muted-foreground">
                     {s.long}
                   </p>
