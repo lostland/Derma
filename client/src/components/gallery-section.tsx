@@ -1,4 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
+import { VideoWithPreview } from "@/components/video-with-preview";
 import { useEffect, useRef } from "react";
 import waiting_vid from "@assets/waiting.mp4";
 import talk_vid from "@assets/talk.mp4";
@@ -88,16 +89,11 @@ export function GallerySection() {
 
               <Card className="bg-transparent shadow-none rounded-none border-none md:bg-card md:shadow-sm md:rounded-2xl overflow-hidden">
                 {String(s.media).toLowerCase().endsWith(".mp4") ? (
-                  <video
-                    className="block w-full h-[260px] md:h-[360px] object-cover"
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    preload="metadata"
-                  >
-                    <source src={s.media as any} type="video/mp4" />
-                  </video>
+                  <VideoWithPreview
+                    src={s.media as string}
+                    className="h-[260px] md:h-[360px]"
+                    preload="auto"
+                  />
                 ) : (
                   <img
                     src={s.media as any}
@@ -106,7 +102,7 @@ export function GallerySection() {
                     loading="lazy"
                   />
                 )}
-                <CardContent className="p-0 pt-6 md:p-8">
+                <CardContent className="px-6 pb-6 pt-6 md:p-8">
                   <p className="text-base md:text-lg leading-relaxed text-muted-foreground">
                     {s.long}
                   </p>

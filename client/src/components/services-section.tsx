@@ -1,4 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
+import { VideoWithPreview } from "@/components/video-with-preview";
 import { useEffect, useRef } from "react";
 import lift_img from "@assets/lift.mp4";
 import anti_img from "@assets/anti.mp4";
@@ -72,21 +73,12 @@ export function ServicesSection() {
               {/* 카드 전체를 채우는 이미지 */}
               <div className="w-full h-48 md:h-64">
                 {String(service.media).toLowerCase().endsWith(".mp4") ? (
-                  <video
-                    className="block w-full h-full object-cover"
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    preload="metadata"
-                  >
-                    <source src={service.media as any} type="video/mp4" />
-                  </video>
+                  <VideoWithPreview src={service.media as string} className="h-full" preload="auto" />
                 ) : (
                   <img src={service.media as any} alt={service.title} className="block w-full h-full object-cover" />
                 )}
               </div>
-              <CardContent className="px-0 py-6 md:p-6">
+              <CardContent className="px-6 py-6 md:p-6">
                 <h4 className="text-xl font-bold mb-4">{service.title}</h4>
                 <p className="text-muted-foreground">{service.description}</p>
               </CardContent>
