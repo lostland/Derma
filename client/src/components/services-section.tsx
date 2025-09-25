@@ -79,7 +79,7 @@ export function ServicesSection() {
                 )}
               </div>
               <CardContent className="px-6 py-6 md:p-6">
-                <h4 className="text-xl font-bold mb-4">{service.title}</h4>
+                <h4 className="text-xl font-bold mb-4 text-center">{service.title}</h4>
                 <p className="text-muted-foreground">{service.description}</p>
               </CardContent>
             </Card>
