@@ -66,7 +66,7 @@ export function ServicesSection() {
           {services.map((service, index) => (
             <Card
               key={index}
-              className="bg-card overflow-hidden shadow-xl hover:shadow-2xl transition-all animate-fade-in border border-border/50 backdrop-blur-sm"
+              className="overflow-hidden transition-all animate-fade-in rounded-none border-none bg-transparent shadow-none backdrop-blur-0 md:rounded-2xl md:border md:border-border/50 md:bg-card md:shadow-xl md:hover:shadow-2xl md:backdrop-blur-sm"
               data-testid={`card-service-${index}`}
             >
               {/* 카드 전체를 채우는 이미지 */}
@@ -79,8 +79,7 @@ export function ServicesSection() {
                   <img src={service.media as any} alt={service.title} className="w-full h-full object-cover" />
                 )}
               </div>
-
-              <CardContent className="p-6">
+              <CardContent className="px-0 py-6 md:p-6">
                 <h4 className="text-xl font-bold mb-4">{service.title}</h4>
                 <p className="text-muted-foreground">{service.description}</p>
               </CardContent>
