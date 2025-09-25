@@ -164,107 +164,7 @@ export function NaverMap({width = "100%",
   }, [isLoaded]);
 
 
-  // 2.5) 주소 기반 지오코딩 (주소가 주어진 경우 중심/마커 갱신)
-  useEffect(() => {
-    if (!isLoaded || !mapInstanceRef.current || !window.naver?.maps || !address) return;
-    try {
-      const { maps } = window.naver;
-      // @ts-ignore
-      if (!maps.Service || !maps.Service.geocode) {
-        console.warn("Naver Maps Geocoder not available — using fallbackCenter or center");
-        const lat = (fallbackCenter?.lat ?? center.lat);
-        const lng = (fallbackCenter?.lng ?? center.lng);
-        const ll = new maps.LatLng(lat, lng);
-        mapInstanceRef.current!.setCenter(ll);
-        const marker = new maps.Marker({ position: ll, map: mapInstanceRef.current!, icon: customMarkerHtml ? { content: customMarkerHtml, size: new maps.Size(24, 34), anchor: new maps.Point(12, 34) } : undefined, });
-        const bubbleHtml = addressBubbleHtml || `<div style=\"display:inline-block; padding:10px 12px; font-size:13px; font-weight:600; background:#fff; border:1px solid rgba(0,0,0,0.15); box-shadow:0 4px 12px rgba(0,0,0,0.15); border-radius:10px; color:#111; white-space:nowrap;\">${addressLabel || address}</div>`;
-        const iw = new maps.InfoWindow({ content: bubbleHtml, borderWidth: 0, disableAnchor: false });
-        iw.open(mapInstanceRef.current!, marker);
-        return;
-      }
-
-      console.log('NaverMap: Geocoding address...');
-      console.log('NaverMap: address=', address);
-      console.log('NaverMap: addressLabel=', addressLabel);
-
-      maps.Service.geocode({
-        query: '올림픽로 102'
-      }, function(status : any, response : any) {
-        if (status === maps.Service.Status.ERROR) {
-            return alert('Something Wrong!');
-        }
-
-        if (response.v2.meta.totalCount === 0) {
-          
-            return alert('totalCount' + response.v2.meta.totalCount);
-        }
-
-        var htmlAddresses = [],
-            item = response.v2.addresses[0],
-            point = new maps.Point(item.x, item.y);
-
-           console.log('NaverMap: Geocode success!', point);
-           console.log('NaverMap: item.x=', item.x);
-           console.log('NaverMap: item.y=', item.y);
-
-        if (item.roadAddress) {
-            console.log('[도로명 주소] ' + item.roadAddress)
-        }
-
-        if (item.jibunAddress) {
-            console.log('[지번 주소] ' + item.jibunAddress)
-        }
-
-        if (item.englishAddress) {
-            console.log('[영문명 주소] ' + item.englishAddress)
-        }
-
-
-      });
-
-      
-      // @ts-ignore
-      maps.Service.geocode({ query: address }, (status: any, response: any) => {
-        // @ts-ignore
-        if (status !== maps.Service.Status.OK) {
-          console.warn("Geocode failed:", status, "— using fallbackCenter or center");
-          const lat = (fallbackCenter?.lat ?? center.lat);
-          const lng = (fallbackCenter?.lng ?? center.lng);
-          const ll = new maps.LatLng(lat, lng);
-          mapInstanceRef.current!.setCenter(ll);
-          const marker = new maps.Marker({ position: ll, map: mapInstanceRef.current!, icon: customMarkerHtml ? { content: customMarkerHtml, size: new maps.Size(24, 34), anchor: new maps.Point(12, 34) } : undefined, });
-          const bubbleHtml = addressBubbleHtml || `<div style=\"display:inline-block; padding:10px 12px; font-size:13px; font-weight:600; background:#fff; border:1px solid rgba(0,0,0,0.15); box-shadow:0 4px 12px rgba(0,0,0,0.15); border-radius:10px; color:#111; white-space:nowrap;\">${addressLabel || address}</div>`;
-          const iw = new maps.InfoWindow({ content: bubbleHtml, borderWidth: 0, disableAnchor: false });
-          iw.open(mapInstanceRef.current!, marker);
-          return;
-        }
-        const item = response?.v2?.addresses?.[0];
-        if (!item) return;
-        const lat = parseFloat(item.y);
-        const lng = parseFloat(item.x);
-        const ll = new maps.LatLng(lat, lng);
-        mapInstanceRef.current!.setCenter(ll);
-
-        console.log('NaverMap: Geocode success!', ll);
-
-        const marker = new maps.Marker({
-          position: ll,
-          map: mapInstanceRef.current!,
-          icon: customMarkerHtml ? {
-            content: customMarkerHtml,
-            size: new maps.Size(24, 34),
-            anchor: new maps.Point(12, 34),
-          } : undefined,
-        });
-        const bubbleHtml = addressBubbleHtml || `<div style=\"display:inline-block; padding:10px 12px; font-size:13px; font-weight:600; background:#fff; border:1px solid rgba(0,0,0,0.15); box-shadow:0 4px 12px rgba(0,0,0,0.15); border-radius:10px; color:#111; white-space:nowrap;\">${addressLabel || address}</div>`;
-        const iw = new maps.InfoWindow({ content: bubbleHtml, borderWidth: 0, disableAnchor: false });
-        iw.open(mapInstanceRef.current!, marker);
-      });
-    } catch (e) {
-      console.warn("Geocode error:", e);
-    }
-  }, [isLoaded, address, addressLabel, addressBubbleHtml, customMarkerHtml]);
-
+  
   // 3) 중심/줌 업데이트
   useEffect(() => {
     if (!mapInstanceRef.current || !window.naver?.maps) 
@@ -313,6 +213,108 @@ export function NaverMap({width = "100%",
     });
     markersRef.current = arr;
   }, [markers]);
+
+  // 2.5) 주소 기반 지오코딩 (주소가 주어진 경우 중심/마커 갱신)
+  useEffect(() => {
+    if (!isLoaded || !mapInstanceRef.current || !window.naver?.maps || !address) return;
+    try {
+      const { maps } = window.naver;
+      // @ts-ignore
+      if (!maps.Service || !maps.Service.geocode) {
+        console.warn("Naver Maps Geocoder not available — using fallbackCenter or center");
+        const lat = (fallbackCenter?.lat ?? center.lat);
+        const lng = (fallbackCenter?.lng ?? center.lng);
+        const ll = new maps.LatLng(lat, lng);
+        mapInstanceRef.current!.setCenter(ll);
+        const marker = new maps.Marker({ position: ll, map: mapInstanceRef.current!, icon: customMarkerHtml ? { content: customMarkerHtml, size: new maps.Size(24, 34), anchor: new maps.Point(12, 34) } : undefined, });
+        const bubbleHtml = addressBubbleHtml || `<div style=\"display:inline-block; padding:10px 12px; font-size:13px; font-weight:600; background:#fff; border:1px solid rgba(0,0,0,0.15); box-shadow:0 4px 12px rgba(0,0,0,0.15); border-radius:10px; color:#111; white-space:nowrap;\">${addressLabel || address}</div>`;
+        const iw = new maps.InfoWindow({ content: bubbleHtml, borderWidth: 0, disableAnchor: false });
+        iw.open(mapInstanceRef.current!, marker);
+        return;
+      }
+
+      console.log('NaverMap: Geocoding address...');
+      console.log('NaverMap: address=', address);
+      console.log('NaverMap: addressLabel=', addressLabel);
+
+      maps.Service.geocode({
+        query: '올림픽로 102'
+      }, function(status : any, response : any) {
+        if (status === maps.Service.Status.ERROR) {
+            return alert('Something Wrong!');
+        }
+
+        if (response.v2.meta.totalCount === 0) {
+
+            return alert('totalCount' + response.v2.meta.totalCount);
+        }
+
+        var htmlAddresses = [],
+            item = response.v2.addresses[0],
+            point = new maps.Point(item.x, item.y);
+
+           console.log('NaverMap: Geocode success!', point);
+           console.log('NaverMap: item.x=', item.x);
+           console.log('NaverMap: item.y=', item.y);
+
+        if (item.roadAddress) {
+            console.log('[도로명 주소] ' + item.roadAddress)
+        }
+
+        if (item.jibunAddress) {
+            console.log('[지번 주소] ' + item.jibunAddress)
+        }
+
+        if (item.englishAddress) {
+            console.log('[영문명 주소] ' + item.englishAddress)
+        }
+
+
+      });
+
+
+      // @ts-ignore
+      maps.Service.geocode({ query: address }, (status: any, response: any) => {
+        // @ts-ignore
+        if (status !== maps.Service.Status.OK) {
+          console.warn("Geocode failed:", status, "— using fallbackCenter or center");
+          const lat = (fallbackCenter?.lat ?? center.lat);
+          const lng = (fallbackCenter?.lng ?? center.lng);
+          const ll = new maps.LatLng(lat, lng);
+          mapInstanceRef.current!.setCenter(ll);
+          const marker = new maps.Marker({ position: ll, map: mapInstanceRef.current!, icon: customMarkerHtml ? { content: customMarkerHtml, size: new maps.Size(24, 34), anchor: new maps.Point(12, 34) } : undefined, });
+          const bubbleHtml = addressBubbleHtml || `<div style=\"display:inline-block; padding:10px 12px; font-size:13px; font-weight:600; background:#fff; border:1px solid rgba(0,0,0,0.15); box-shadow:0 4px 12px rgba(0,0,0,0.15); border-radius:10px; color:#111; white-space:nowrap;\">${addressLabel || address}</div>`;
+          const iw = new maps.InfoWindow({ content: bubbleHtml, borderWidth: 0, disableAnchor: false });
+          iw.open(mapInstanceRef.current!, marker);
+          return;
+        }
+        const item = response?.v2?.addresses?.[0];
+        if (!item) return;
+        const lat = parseFloat(item.y);
+        const lng = parseFloat(item.x);
+        const ll = new maps.LatLng(lat, lng);
+        mapInstanceRef.current!.setCenter(ll);
+
+        console.log('NaverMap: Geocode success!', ll);
+
+        const marker = new maps.Marker({
+          position: ll,
+          map: mapInstanceRef.current!,
+          icon: customMarkerHtml ? {
+            content: customMarkerHtml,
+            size: new maps.Size(24, 34),
+            anchor: new maps.Point(12, 34),
+          } : undefined,
+        });
+        const bubbleHtml = addressBubbleHtml || `<div style=\"display:inline-block; padding:10px 12px; font-size:13px; font-weight:600; background:#fff; border:1px solid rgba(0,0,0,0.15); box-shadow:0 4px 12px rgba(0,0,0,0.15); border-radius:10px; color:#111; white-space:nowrap;\">${addressLabel || address}</div>`;
+        const iw = new maps.InfoWindow({ content: bubbleHtml, borderWidth: 0, disableAnchor: false });
+        iw.open(mapInstanceRef.current!, marker);
+      });
+    } catch (e) {
+      console.warn("Geocode error:", e);
+    }
+  }, [isLoaded, address, addressLabel, addressBubbleHtml, customMarkerHtml]);
+
 
   if (loadError) {
     console.error('NaverMap: Error loading map:', loadError);
