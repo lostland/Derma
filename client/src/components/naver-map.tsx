@@ -187,6 +187,41 @@ export function NaverMap({width = "100%",
       console.log('NaverMap: address=', address);
       console.log('NaverMap: addressLabel=', addressLabel);
 
+      maps.Service.geocode({
+        query: address
+      }, function(status, response) {
+        if (status === maps.Service.Status.ERROR) {
+            return alert('Something Wrong!');
+        }
+
+        if (response.v2.meta.totalCount === 0) {
+          
+            return alert('totalCount' + response.v2.meta.totalCount);
+        }
+
+        var htmlAddresses = [],
+            item = response.v2.addresses[0],
+            point = new maps.Point(item.x, item.y);
+
+           console.log('NaverMap: Geocode success!', point);
+           console.log('NaverMap: item.x=', item.x);
+           console.log('NaverMap: item.y=', item.y);
+
+        if (item.roadAddress) {
+            console.log('[도로명 주소] ' + item.roadAddress)
+        }
+
+        if (item.jibunAddress) {
+            console.log('[지번 주소] ' + item.jibunAddress)
+        }
+
+        if (item.englishAddress) {
+            console.log('[영문명 주소] ' + item.englishAddress)
+        }
+
+
+      });
+
       
       // @ts-ignore
       maps.Service.geocode({ query: address }, (status: any, response: any) => {
