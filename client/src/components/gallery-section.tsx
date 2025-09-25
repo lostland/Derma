@@ -14,20 +14,22 @@ export function GallerySection() {
   const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.remove("opacity-0");
-          entry.target.classList.add("opacity-100");
-        } else {
-          entry.target.classList.remove("opacity-100");
-          entry.target.classList.add("opacity-0");
-        }
-      });
-    }, { threshold: 0.1 });
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("visible");
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
 
-    const nodes = sectionRef.current?.querySelectorAll("[data-observe]") || [];
-    nodes.forEach((el) => observer.observe(el));
+    const section = sectionRef.current;
+    if (section) {
+      const animatedElements = section.querySelectorAll(".animate-fade-in");
+      animatedElements.forEach((el) => observer.observe(el));
+    }
 
     return () => observer.disconnect();
   }, []);
@@ -70,7 +72,7 @@ export function GallerySection() {
   return (
     <section ref={sectionRef} className="py-20 bg-background">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
+        <div className="text-center mb-16 animate-fade-in">
           <h3 className="text-3xl md:text-4xl font-bold text-primary mb-4">최첨단 시설</h3>
           <p className="text-lg text-muted-foreground">안전하고 쾌적한 환경에서 제공하는 프리미엄 의료 서비스</p>
         </div>
@@ -80,8 +82,7 @@ export function GallerySection() {
           {sections.map((s, idx) => (
             <article
               key={idx}
-              data-observe
-              className="opacity-0 transition-opacity duration-700"
+              className="animate-fade-in"
             >
               <h4 className="text-2xl md:text-3xl font-semibold mb-6">{s.title}</h4>
 
