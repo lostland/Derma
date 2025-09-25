@@ -62,7 +62,7 @@ export function NaverMap({
     (window as any).initNaverMap = () => setIsLoaded(true);
 
     // 이미 붙어있으면 재첨부 방지
-    if (document.getElementById('naver-maps-api-script')) return;
+    //if (document.getElementById('naver-maps-api-script')) return;
 
     fetch('/api/naver/client-id')
       .then(r => r.json())
