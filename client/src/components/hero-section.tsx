@@ -24,12 +24,20 @@ export function HeroSection({ onKakaoClick }: HeroSectionProps) {
           preload="auto"
           aria-hidden
         />
-        <div className="absolute inset-0 bg-primary/80"></div>
-        <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-b from-transparent via-primary/60 to-slate-50 dark:to-slate-950"></div>
+        <div className="pointer-events-none absolute inset-0 z-20 bg-primary/80"></div>
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 h-48 bg-gradient-to-b from-transparent via-primary/60 to-slate-50 dark:to-slate-950"></div>
+      </div>
+
+      {/* Tagline Overlay */}
+      <div className="absolute inset-x-0 bottom-20 z-40 px-4 text-center text-white">
+        <div className="space-y-1 text-base md:text-lg font-semibold drop-shadow-lg">
+          <p>{taglineTitle}</p>
+          <p className="text-lg md:text-2xl font-bold">{taglineSubtitle}</p>
+        </div>
       </div>
 
       {/* Content */}
-      <div className="relative z-10 text-center text-white max-w-4xl mx-auto px-4">
+      <div className="relative z-40 text-center text-white max-w-4xl mx-auto px-4 pt-24 md:pt-32">
         <h2 className="text-4xl md:text-6xl font-bold mb-6 animate-fade-in">
           아름다운 피부를 위한<br />
           <span className="text-accent">프리미엄 케어</span>
@@ -68,16 +76,6 @@ export function HeroSection({ onKakaoClick }: HeroSectionProps) {
             <MessageSquare className="w-5 h-5 mr-2" />
             카카오톡 상담
           </Button>
-        </div>
-      </div>
-
-      {/* Tagline Overlay */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20">
-        <div className="mx-auto max-w-3xl px-4 pb-6 md:pb-10">
-          <div className="rounded-2xl border border-white/30 bg-white/90 p-6 shadow-xl backdrop-blur-sm dark:border-white/20 dark:bg-slate-900/85">
-            <h3 className="text-2xl font-bold text-primary md:text-3xl">{taglineTitle}</h3>
-            <p className="mt-2 text-base text-slate-600 md:text-lg dark:text-slate-200">{taglineSubtitle}</p>
-          </div>
         </div>
       </div>
     </section>
