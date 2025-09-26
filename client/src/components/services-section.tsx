@@ -57,14 +57,6 @@ export function ServicesSection() {
       data-testid="section-services"
     >
       <div className="mx-auto w-full px-0 md:container md:mx-auto md:px-4">
-        <div className="text-center mb-16 animate-fade-in">
-          <h3 className="text-3xl md:text-4xl font-bold text-primary mb-4">
-            서울 안티에이징 피부과
-          </h3>
-          <p className="text-lg text-muted-foreground">
-            동안을 디자인하는 프리미엄 안티에이징 클리닉
-          </p>
-        </div>
 
         <div className="grid md:grid-cols-3 gap-8">
           {services.map((service, index) => (

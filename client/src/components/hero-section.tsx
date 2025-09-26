@@ -29,10 +29,14 @@ export function HeroSection({ onKakaoClick }: HeroSectionProps) {
       </div>
 
       {/* Tagline Overlay */}
-      <div className="absolute inset-x-0 bottom-20 z-40 px-4 text-center text-white">
-        <div className="space-y-1 text-base md:text-lg font-semibold drop-shadow-lg">
-          <p>{taglineTitle}</p>
-          <p className="text-lg md:text-2xl font-bold">{taglineSubtitle}</p>
+      <div className="absolute inset-x-0 bottom-20 z-40 px-4 text-center">
+        <div className="space-y-1 font-semibold drop-shadow-lg">
+          <p className="text-white text-xl md:text-2xl font-bold [text-shadow:_1px_1px_2px_black]">
+            {taglineTitle}
+          </p>
+          <p className="text-white text-2xl md:text-4xl font-extrabold [text-shadow:_2px_2px_3px_black]">
+            {taglineSubtitle}
+          </p>
         </div>
       </div>
 
