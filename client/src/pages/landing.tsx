@@ -102,7 +102,9 @@ export default function Landing() {
 
       {/* Main Content */}
       <main className="pt-20">
-        <HeroSection onKakaoClick={openKakaoTalk} />
+        <div className="-mt-20">
+          <HeroSection onKakaoClick={openKakaoTalk} />
+        </div>
         <ServicesSection />
         <GallerySection />
         {/* <AppointmentBooking /> */}
