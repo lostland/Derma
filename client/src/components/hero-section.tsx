@@ -8,8 +8,11 @@ interface HeroSectionProps {
 }
 
 export function HeroSection({ onKakaoClick }: HeroSectionProps) {
+  const taglineTitle = "서울 안티에이징 피부과";
+  const taglineSubtitle = "동안을 디자인하는 프리미엄 안티에이징 클리닉";
+
   return (
-    <section className="relative min-h-[50vh] flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-[50vh] flex items-center justify-center overflow-hidden pb-32 md:pb-40">
       {/* Background Image */}
       <div className="absolute inset-0">
         <VideoWithPreview
@@ -22,6 +25,7 @@ export function HeroSection({ onKakaoClick }: HeroSectionProps) {
           aria-hidden
         />
         <div className="absolute inset-0 bg-primary/80"></div>
+        <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-b from-transparent via-primary/60 to-slate-50 dark:to-slate-950"></div>
       </div>
 
       {/* Content */}
@@ -64,6 +68,16 @@ export function HeroSection({ onKakaoClick }: HeroSectionProps) {
             <MessageSquare className="w-5 h-5 mr-2" />
             카카오톡 상담
           </Button>
+        </div>
+      </div>
+
+      {/* Tagline Overlay */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20">
+        <div className="mx-auto max-w-3xl px-4 pb-6 md:pb-10">
+          <div className="rounded-2xl border border-white/30 bg-white/90 p-6 shadow-xl backdrop-blur-sm dark:border-white/20 dark:bg-slate-900/85">
+            <h3 className="text-2xl font-bold text-primary md:text-3xl">{taglineTitle}</h3>
+            <p className="mt-2 text-base text-slate-600 md:text-lg dark:text-slate-200">{taglineSubtitle}</p>
+          </div>
         </div>
       </div>
     </section>
