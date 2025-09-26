@@ -25,7 +25,7 @@ export function HeroSection({ onKakaoClick }: HeroSectionProps) {
           aria-hidden
         />
         <div className="pointer-events-none absolute inset-0 z-20 bg-primary/80"></div>
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 h-48 bg-gradient-to-b from-transparent via-primary/60 to-slate-50 dark:to-slate-950"></div>
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 h-48 bg-gradient-to-b from-transparent via-slate-90 to-[color:var(--background)]"></div>
       </div>
 
       {/* Tagline Overlay */}

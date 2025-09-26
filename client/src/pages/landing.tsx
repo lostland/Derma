@@ -73,7 +73,7 @@ export default function Landing() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-rose-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900">
       {/* Fixed Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="container mx-auto px-4 py-2 flex items-center justify-between">
           <div className="h-16 md:h-20 flex items-center justify-center">
             <img
               src={logoImage}
