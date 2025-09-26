@@ -78,7 +78,7 @@ export default function Landing() {
             <img
               src={logoImage}
               alt="서울 안티에이징 피부과 의원"
-              className="h-full w-[90vw] max-w-[90vw] object-contain mx-auto md:w-auto md:max-w-none"
+              className="h-full w-[95vw] max-w-[95vw] object-contain mx-auto md:w-auto md:max-w-none"
             />
           </div>
           <div className="hidden md:flex items-center space-x-4">
