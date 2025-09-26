@@ -59,10 +59,10 @@ export function ServicesSection() {
       <div className="mx-auto w-full px-0 md:container md:mx-auto md:px-4">
         <div className="text-center mb-16 animate-fade-in">
           <h3 className="text-3xl md:text-4xl font-bold text-primary mb-4">
-            전문 진료 분야
+            서울 안티에이징 피부과
           </h3>
           <p className="text-lg text-muted-foreground">
-            최고의 전문성으로 제공하는 맞춤형 피부 치료
+            동안을 디자인하는 프리미엄 안티에이징 클리닉
           </p>
         </div>
 

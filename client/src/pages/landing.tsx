@@ -74,7 +74,13 @@ export default function Landing() {
       {/* Fixed Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border shadow-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="h-16 md:h-20 flex items-center justify-center"><img src={logoImage} alt="서울 안티에이징 피부과 의원" className="max-h-full object-contain mx-auto" /></div>
+          <div className="h-16 md:h-20 flex items-center justify-center">
+            <img
+              src={logoImage}
+              alt="서울 안티에이징 피부과 의원"
+              className="h-full w-auto max-w-none object-contain mx-auto"
+            />
+          </div>
           <div className="flex items-center space-x-4">
 
             <div className="hidden md:flex items-center space-x-2 text-theme font-medium">
