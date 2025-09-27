@@ -1,12 +1,45 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { VideoWithPreview } from "@/components/video-with-preview";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import lift_img from "@assets/lift.mp4";
 import anti_img from "@assets/anti.mp4";
 import re_img from "@assets/re.mp4";
 
 export function ServicesSection() {
   const sectionRef = useRef<HTMLElement>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const startXRef = useRef<number | null>(null);
+
+  const goToIndex = (index: number) => {
+    setCurrentIndex((prev) => {
+      if (index < 0) {
+        return 0;
+      }
+      if (index >= services.length) {
+        return services.length - 1;
+      }
+      return index;
+    });
+  };
+
+  const handlePointerDown = (clientX: number) => {
+    startXRef.current = clientX;
+  };
+
+  const handlePointerUp = (clientX: number) => {
+    if (startXRef.current === null) return;
+
+    const deltaX = clientX - startXRef.current;
+    const threshold = 50;
+
+    if (deltaX <= -threshold) {
+      goToIndex(currentIndex + 1);
+    } else if (deltaX >= threshold) {
+      goToIndex(currentIndex - 1);
+    }
+
+    startXRef.current = null;
+  };
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -57,34 +90,45 @@ export function ServicesSection() {
       data-testid="section-services"
     >
       <div className="mx-auto w-full px-0">
-        <div className="overflow-x-auto">
-          <div className="flex w-max gap-6 px-6 pb-6 sm:gap-8 sm:px-8 lg:px-12 snap-x snap-mandatory">
+        <div
+          className="relative overflow-hidden px-6 pb-6 sm:px-8 lg:px-12"
+          style={{ touchAction: "pan-y" }}
+          onPointerDown={(event) => handlePointerDown(event.clientX)}
+          onPointerUp={(event) => handlePointerUp(event.clientX)}
+          onPointerCancel={() => {
+            startXRef.current = null;
+          }}
+          onPointerLeave={() => {
+            startXRef.current = null;
+          }}
+        >
+          <div
+            className="flex transition-transform duration-500 ease-out"
+            style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+          >
             {services.map((service, index) => (
               <Card
                 key={index}
-                className="flex w-[280px] flex-shrink-0 flex-col overflow-hidden rounded-none border-none bg-transparent shadow-none backdrop-blur-0 transition-all animate-fade-in snap-center sm:w-[320px] md:w-[360px]"
+                className="flex min-w-full flex-shrink-0 flex-col overflow-hidden rounded-none border-none bg-transparent shadow-none backdrop-blur-0 animate-fade-in"
                 data-testid={`card-service-${index}`}
               >
-                {/* 카드 전체를 채우는 이미지 */}
-                <div className="relative w-full pt-[75%]">
-                  <div className="absolute inset-0">
-                    {String(service.media).toLowerCase().endsWith(".mp4") ? (
-                      <VideoWithPreview
-                        src={service.media as string}
-                        className="h-full w-full object-cover"
-                        preload="auto"
-                      />
-                    ) : (
-                      <img
-                        src={service.media as any}
-                        alt={service.title}
-                        className="block h-full w-full object-cover"
-                      />
-                    )}
-                  </div>
+                <div className="relative w-full overflow-hidden aspect-video">
+                  {String(service.media).toLowerCase().endsWith(".mp4") ? (
+                    <VideoWithPreview
+                      src={service.media as string}
+                      className="block h-full w-full object-cover"
+                      preload="auto"
+                    />
+                  ) : (
+                    <img
+                      src={service.media as any}
+                      alt={service.title}
+                      className="block h-full w-full object-cover"
+                    />
+                  )}
                 </div>
                 <CardContent className="px-6 py-6">
-                  <h4 className="text-xl font-bold mb-4 text-center">{service.title}</h4>
+                  <h4 className="mb-4 text-center text-xl font-bold">{service.title}</h4>
                   <p className="text-muted-foreground">{service.description}</p>
                 </CardContent>
               </Card>
