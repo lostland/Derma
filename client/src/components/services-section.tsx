@@ -42,12 +42,12 @@ export function ServicesSection() {
 
   const goToNext = () => {
     if (serviceCount === 0) return;
-    setDisplayIndex((prev) => prev + 1);
+    setDisplayIndex((prev) => Math.min(prev + 1, serviceCount + 1));
   };
 
   const goToPrev = () => {
     if (serviceCount === 0) return;
-    setDisplayIndex((prev) => prev - 1);
+    setDisplayIndex((prev) => Math.max(prev - 1, 0));
   };
 
   const handlePointerDown = (clientX: number) => {
