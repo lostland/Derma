@@ -172,15 +172,10 @@ export function ServicesSection() {
   const previewDistance = useMemo(() => {
     if (!serviceCount || previewOffset === 0) return 0;
 
-    const isAtStartClone = displayIndex === 0;
-    const isAtFirstCard = displayIndex === 1;
-    const isAtEndClone = displayIndex === serviceCount + 1;
+    const isClonePosition =
+      displayIndex === 0 || displayIndex === serviceCount + 1;
 
-    if (isAtStartClone || isAtFirstCard || isAtEndClone) {
-      return previewOffset;
-    }
-
-    return 0;
+    return isClonePosition ? previewOffset : 0;
   }, [displayIndex, previewOffset, serviceCount]);
 
   const translateX = useMemo(() => {
