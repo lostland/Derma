@@ -116,18 +116,25 @@ export function ServicesSection() {
 
   const cardWidth = useMemo(() => {
     if (containerWidth === 0) return 0;
-    return containerWidth * 0.8;
+    return containerWidth * 0.78;
   }, [containerWidth]);
 
   const gap = useMemo(() => {
     if (containerWidth === 0) return 0;
-    return containerWidth * 0.04;
+    return containerWidth * 0.02;
   }, [containerWidth]);
 
   const sidePadding = useMemo(() => {
     if (containerWidth === 0 || cardWidth === 0) return 0;
     return (containerWidth - cardWidth) / 2;
   }, [cardWidth, containerWidth]);
+
+  const previewOffset = useMemo(() => {
+    if (containerWidth === 0) return 0;
+    const desiredPreview = containerWidth * 0.08;
+    if (sidePadding === 0) return desiredPreview;
+    return Math.min(desiredPreview, sidePadding);
+  }, [containerWidth, sidePadding]);
 
   const extendedServices = useMemo(() => {
     if (serviceCount === 0) return [] as typeof services;
@@ -141,29 +148,36 @@ export function ServicesSection() {
   }, [serviceCount]);
 
   useEffect(() => {
-    if (!serviceCount) return;
-    if (displayIndex === 0) {
-      const id = requestAnimationFrame(() => {
-        setIsTransitionEnabled(false);
-        setDisplayIndex(serviceCount);
-      });
-      return () => cancelAnimationFrame(id);
-    }
-    if (displayIndex === serviceCount + 1) {
-      const id = requestAnimationFrame(() => {
-        setIsTransitionEnabled(false);
-        setDisplayIndex(1);
-      });
-      return () => cancelAnimationFrame(id);
-    }
-
     if (!isTransitionEnabled) {
       const id = requestAnimationFrame(() => {
         setIsTransitionEnabled(true);
       });
       return () => cancelAnimationFrame(id);
     }
-  }, [displayIndex, serviceCount, isTransitionEnabled]);
+  }, [isTransitionEnabled]);
+
+  const handleTransitionEnd = () => {
+    if (!serviceCount) return;
+    if (displayIndex === 0) {
+      setIsTransitionEnabled(false);
+      setDisplayIndex(serviceCount);
+      return;
+    }
+    if (displayIndex === serviceCount + 1) {
+      setIsTransitionEnabled(false);
+      setDisplayIndex(1);
+    }
+  };
+
+  const translateX = useMemo(() => {
+    if (cardWidth === 0) return 0;
+    const baseDistance = cardWidth + gap;
+    const shouldShowPreview =
+      serviceCount > 0 &&
+      (displayIndex === serviceCount || displayIndex === 0);
+    const previewDistance = shouldShowPreview ? previewOffset : 0;
+    return -(displayIndex * baseDistance + previewDistance);
+  }, [cardWidth, displayIndex, gap, previewOffset, serviceCount]);
 
   return (
     <section
@@ -204,11 +218,12 @@ export function ServicesSection() {
           <div
             className="flex transition-transform ease-out"
             style={{
-              transform: `translateX(-${displayIndex * (cardWidth + gap)}px)`,
+              transform: `translateX(${translateX}px)`,
               gap: gap ? `${gap}px` : undefined,
               padding: sidePadding ? `0 ${sidePadding}px` : undefined,
               transitionDuration: isTransitionEnabled ? "500ms" : "0ms",
             }}
+            onTransitionEnd={handleTransitionEnd}
           >
             {extendedServices.map((service, index) => {
               const isClone =
@@ -227,7 +242,7 @@ export function ServicesSection() {
                 <Card
                   key={`${service.title}-${index}`}
                   className="flex flex-shrink-0 flex-col overflow-hidden rounded-none border-none bg-transparent shadow-none backdrop-blur-0 animate-fade-in"
-                  style={{ width: cardWidth ? `${cardWidth}px` : "80vw" }}
+                  style={{ width: cardWidth ? `${cardWidth}px` : "78vw" }}
                   data-testid={
                     !isClone ? `card-service-${actualIndex}` : undefined
                   }
