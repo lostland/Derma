@@ -170,6 +170,8 @@ export function ServicesSection() {
   };
 
   const previewDistance = useMemo(() => {
+    return 0;
+    
     if (!serviceCount || previewOffset === 0) return 0;
 
     if (displayIndex === 0) {
