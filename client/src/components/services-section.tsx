@@ -9,6 +9,7 @@ export function ServicesSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const startXRef = useRef<number | null>(null);
+  const pointerIdRef = useRef<number | null>(null);
 
   const goToIndex = (index: number) => {
     setCurrentIndex((prev) => {
@@ -91,15 +92,31 @@ export function ServicesSection() {
     >
       <div className="mx-auto w-full px-0">
         <div
-          className="relative overflow-hidden px-6 pb-6 sm:px-8 lg:px-12"
+          className="relative left-1/2 w-screen -translate-x-1/2 overflow-hidden pb-6"
           style={{ touchAction: "pan-y" }}
-          onPointerDown={(event) => handlePointerDown(event.clientX)}
-          onPointerUp={(event) => handlePointerUp(event.clientX)}
-          onPointerCancel={() => {
+          onPointerDown={(event) => {
+            pointerIdRef.current = event.pointerId;
+            event.currentTarget.setPointerCapture(event.pointerId);
+            handlePointerDown(event.clientX);
+          }}
+          onPointerUp={(event) => {
+            if (pointerIdRef.current !== null) {
+              event.currentTarget.releasePointerCapture(pointerIdRef.current);
+              pointerIdRef.current = null;
+            }
+            handlePointerUp(event.clientX);
+          }}
+          onPointerCancel={(event) => {
+            if (pointerIdRef.current !== null) {
+              event.currentTarget.releasePointerCapture(pointerIdRef.current);
+              pointerIdRef.current = null;
+            }
             startXRef.current = null;
           }}
           onPointerLeave={() => {
-            startXRef.current = null;
+            if (pointerIdRef.current === null) {
+              startXRef.current = null;
+            }
           }}
         >
           <div
