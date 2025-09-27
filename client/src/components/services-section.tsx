@@ -57,28 +57,39 @@ export function ServicesSection() {
       data-testid="section-services"
     >
       <div className="mx-auto w-full px-0">
-
-        <div className="grid gap-8">
-          {services.map((service, index) => (
-            <Card
-              key={index}
-              className="overflow-hidden transition-all animate-fade-in rounded-none border-none bg-transparent shadow-none backdrop-blur-0"
-              data-testid={`card-service-${index}`}
-            >
-              {/* 카드 전체를 채우는 이미지 */}
-              <div className="w-full h-48">
-                {String(service.media).toLowerCase().endsWith(".mp4") ? (
-                  <VideoWithPreview src={service.media as string} className="h-full" preload="auto" />
-                ) : (
-                  <img src={service.media as any} alt={service.title} className="block w-full h-full object-cover" />
-                )}
-              </div>
-              <CardContent className="px-6 py-6">
-                <h4 className="text-xl font-bold mb-4 text-center">{service.title}</h4>
-                <p className="text-muted-foreground">{service.description}</p>
-              </CardContent>
-            </Card>
-          ))}
+        <div className="overflow-x-auto">
+          <div className="flex w-max gap-6 px-6 pb-6 sm:gap-8 sm:px-8 lg:px-12 snap-x snap-mandatory">
+            {services.map((service, index) => (
+              <Card
+                key={index}
+                className="flex w-[280px] flex-shrink-0 flex-col overflow-hidden rounded-none border-none bg-transparent shadow-none backdrop-blur-0 transition-all animate-fade-in snap-center sm:w-[320px] md:w-[360px]"
+                data-testid={`card-service-${index}`}
+              >
+                {/* 카드 전체를 채우는 이미지 */}
+                <div className="relative w-full pt-[75%]">
+                  <div className="absolute inset-0">
+                    {String(service.media).toLowerCase().endsWith(".mp4") ? (
+                      <VideoWithPreview
+                        src={service.media as string}
+                        className="h-full w-full object-cover"
+                        preload="auto"
+                      />
+                    ) : (
+                      <img
+                        src={service.media as any}
+                        alt={service.title}
+                        className="block h-full w-full object-cover"
+                      />
+                    )}
+                  </div>
+                </div>
+                <CardContent className="px-6 py-6">
+                  <h4 className="text-xl font-bold mb-4 text-center">{service.title}</h4>
+                  <p className="text-muted-foreground">{service.description}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       </div>
     </section>
