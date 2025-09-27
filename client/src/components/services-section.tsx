@@ -275,8 +275,12 @@ export function ServicesSection() {
                     )}
                     </div>
                     <CardContent className="px-6 py-6">
-                      <h4 className="mb-4 text-center text-xl font-bold">{service.title}</h4>
-                      <p className="text-muted-foreground">{service.description}</p>
+                      <h4 className="mb-4 text-center text-2xl font-semibold">
+                        {service.title}
+                      </h4>
+                      <p className="text-base leading-relaxed text-muted-foreground">
+                        {service.description}
+                      </p>
                     </CardContent>
                   </Card>
                 );
