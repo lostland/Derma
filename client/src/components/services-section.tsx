@@ -169,15 +169,25 @@ export function ServicesSection() {
     }
   };
 
+  const previewDistance = useMemo(() => {
+    if (!serviceCount || previewOffset === 0) return 0;
+
+    const isAtStartClone = displayIndex === 0;
+    const isAtFirstCard = displayIndex === 1;
+    const isAtEndClone = displayIndex === serviceCount + 1;
+
+    if (isAtStartClone || isAtFirstCard || isAtEndClone) {
+      return previewOffset;
+    }
+
+    return 0;
+  }, [displayIndex, previewOffset, serviceCount]);
+
   const translateX = useMemo(() => {
     if (cardWidth === 0) return 0;
     const baseDistance = cardWidth + gap;
-    const shouldShowPreview =
-      serviceCount > 0 &&
-      (displayIndex === serviceCount || displayIndex === 0);
-    const previewDistance = shouldShowPreview ? previewOffset : 0;
     return -(displayIndex * baseDistance + previewDistance);
-  }, [cardWidth, displayIndex, gap, previewOffset, serviceCount]);
+  }, [cardWidth, displayIndex, gap, previewDistance]);
 
   return (
     <section
