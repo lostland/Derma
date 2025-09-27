@@ -72,9 +72,9 @@ export function GallerySection() {
 
   return (
     <section ref={sectionRef} className="py-20 bg-background">
-      <div className="mx-auto w-full px-0 md:container md:mx-auto md:px-4">
+      <div className="mx-auto w-full px-0">
         <div className="text-center mb-16 animate-fade-in">
-          <h3 className="text-3xl md:text-4xl font-bold text-primary mb-4">최첨단 시설</h3>
+          <h3 className="text-3xl font-bold text-primary mb-4">최첨단 시설</h3>
           <p className="text-lg text-muted-foreground">안전하고 쾌적한 환경에서 제공하는 프리미엄 의료 서비스</p>
         </div>
 
@@ -85,27 +85,27 @@ export function GallerySection() {
               key={idx}
               className="animate-fade-in"
             >
-              <h4 className="text-2xl md:text-3xl font-semibold mb-6 text-center">
+              <h4 className="text-2xl font-semibold mb-6 text-center">
                 {s.title}
               </h4>
 
-              <Card className="bg-transparent shadow-none rounded-none border-none md:bg-card md:shadow-sm md:rounded-2xl overflow-hidden">
+              <Card className="bg-transparent shadow-none rounded-none border-none overflow-hidden">
                 {String(s.media).toLowerCase().endsWith(".mp4") ? (
                   <VideoWithPreview
                     src={s.media as string}
-                    className="h-[260px] md:h-[360px]"
+                    className="h-[260px]"
                     preload="auto"
                   />
                 ) : (
                   <img
                     src={s.media as any}
                     alt={s.title}
-                    className="block w-full h-[260px] md:h-[360px] object-cover"
+                    className="block w-full h-[260px] object-cover"
                     loading="lazy"
                   />
                 )}
-                <CardContent className="px-6 pb-6 pt-6 md:p-8">
-                  <p className="text-base md:text-lg leading-relaxed text-muted-foreground">
+                <CardContent className="px-6 pb-6 pt-6">
+                  <p className="text-base leading-relaxed text-muted-foreground">
                     {s.long}
                   </p>
                 </CardContent>
