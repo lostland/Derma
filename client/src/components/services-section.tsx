@@ -11,7 +11,7 @@ export function ServicesSection() {
   const [containerWidth, setContainerWidth] = useState(0);
   const startXRef = useRef<number | null>(null);
   const pointerIdRef = useRef<number | null>(null);
-  const [displayIndex, setDisplayIndex] = useState(1);
+  const [displayIndex, setDisplayIndex] = useState(2);
   const [isTransitionEnabled, setIsTransitionEnabled] = useState(true);
 
   const services = useMemo(
@@ -42,7 +42,7 @@ export function ServicesSection() {
 
   const goToNext = () => {
     if (serviceCount === 0) return;
-    setDisplayIndex((prev) => Math.min(prev + 1, serviceCount + 1));
+    setDisplayIndex((prev) => Math.min(prev + 1, serviceCount + 3));
   };
 
   const goToPrev = () => {
@@ -139,12 +139,19 @@ export function ServicesSection() {
   const extendedServices = useMemo(() => {
     if (serviceCount === 0) return [] as typeof services;
     const first = services[0];
-    const last = services[serviceCount - 1];
-    return [last, ...services, first];
+    const lastIndex = serviceCount - 1;
+    const last = services[lastIndex];
+    const beforeLast = services[serviceCount > 1 ? serviceCount - 2 : 0];
+    const afterFirst = services[serviceCount > 1 ? 1 : 0];
+    return [beforeLast, last, ...services, first, afterFirst];
   }, [serviceCount, services]);
 
   useEffect(() => {
-    setDisplayIndex(serviceCount ? 1 : 0);
+    if (!serviceCount) {
+      setDisplayIndex(0);
+      return;
+    }
+    setDisplayIndex(2);
   }, [serviceCount]);
 
   useEffect(() => {
@@ -158,14 +165,14 @@ export function ServicesSection() {
 
   const handleTransitionEnd = () => {
     if (!serviceCount) return;
-    if (displayIndex === 0) {
+    const firstRealIndex = 2;
+    const lastRealIndex = firstRealIndex + serviceCount - 1;
+
+    if (displayIndex < firstRealIndex || displayIndex > lastRealIndex) {
       setIsTransitionEnabled(false);
-      setDisplayIndex(serviceCount);
-      return;
-    }
-    if (displayIndex === serviceCount + 1) {
-      setIsTransitionEnabled(false);
-      setDisplayIndex(1);
+      const modulo = ((displayIndex - firstRealIndex) % serviceCount) + serviceCount;
+      const normalizedIndex = modulo % serviceCount;
+      setDisplayIndex(firstRealIndex + normalizedIndex);
     }
   };
 
@@ -238,17 +245,14 @@ export function ServicesSection() {
             onTransitionEnd={handleTransitionEnd}
           >
             {extendedServices.map((service, index) => {
+              const bufferSize = serviceCount > 0 ? 2 : 0;
               const isClone =
                 serviceCount > 0 &&
-                (index === 0 || index === extendedServices.length - 1);
+                (index < bufferSize || index >= bufferSize + serviceCount);
               const actualIndex =
                 serviceCount === 0
                   ? 0
-                  : index === 0
-                    ? serviceCount - 1
-                    : index === extendedServices.length - 1
-                      ? 0
-                      : index - 1;
+                  : ((index - bufferSize + serviceCount) % serviceCount);
 
               return (
                 <Card
