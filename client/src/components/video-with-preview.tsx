@@ -2,76 +2,32 @@ import { cn } from "@/lib/utils";
 import {
   ComponentPropsWithoutRef,
   type SyntheticEvent,
-  useEffect,
-  useMemo,
   useRef,
-  useState,
 } from "react";
 
-type VideoWithPreviewProps = Omit<ComponentPropsWithoutRef<"video">, "children" | "poster"> & {
+interface VideoWithPreviewProps
+  extends Omit<ComponentPropsWithoutRef<"video">, "children" | "src"> {
   /**
-   * Video source url.
+   * 비디오 소스 URL.
    */
   src: string;
   /**
-   * Mime type for the source element. Defaults to `video/mp4`.
+   * <source> 요소에 사용할 MIME 타입. 기본값은 `video/mp4`.
    */
   type?: string;
-  /**
-   * Optional alt text for the generated preview image.
-   */
-  previewAlt?: string;
-  /**
-   * Explicit preview image source. When omitted, the component attempts to
-   * locate an image with the same base name and a `.jpg` extension.
-   */
-  posterSrc?: string;
-};
-
-type PosterModule = { default: string } | string;
-
-const posterModules = import.meta.glob<PosterModule>("@assets/*.jpg", {
-  eager: true,
-});
-
-const posterByBasename = Object.entries(posterModules).reduce<Record<string, string>>(
-  (acc, [path, module]) => {
-    const fileName = path.split("/").pop();
-    if (!fileName) return acc;
-
-    const base = fileName.replace(/\.[^.]+$/, "");
-    acc[base] = typeof module === "string" ? module : module.default;
-    return acc;
-  },
-  {}
-);
-
-function getPosterFromSrc(src: string) {
-  const fileNameWithHash = src.split("/").pop();
-  if (!fileNameWithHash) return undefined;
-
-  const withoutQuery = fileNameWithHash.split(/[?#]/)[0] ?? fileNameWithHash;
-  const withoutExtension = withoutQuery.replace(/\.[^.]+$/, "");
-  const [base] = withoutExtension.split("-");
-
-  if (!base) return undefined;
-
-  return posterByBasename[base];
 }
 
 /**
- * Video component that keeps a preview frame visible when the video is waiting or stalled.
+ * JPG 미리보기 이미지 없이 바로 MP4 비디오를 렌더링하는 컴포넌트입니다.
  */
 export function VideoWithPreview({
   className,
   src,
   type = "video/mp4",
-  previewAlt = "Video preview",
   autoPlay = true,
   loop = true,
   muted = true,
   playsInline = true,
-  posterSrc,
   onLoadedData,
   onCanPlay,
   onPlaying,
@@ -81,12 +37,6 @@ export function VideoWithPreview({
   ...videoProps
 }: VideoWithPreviewProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const resolvedPoster = useMemo(() => posterSrc ?? getPosterFromSrc(src), [posterSrc, src]);
-  const [showPreview, setShowPreview] = useState(Boolean(resolvedPoster));
-
-  useEffect(() => {
-    setShowPreview(Boolean(resolvedPoster));
-  }, [resolvedPoster, src]);
 
   const handleLoadedData = (event: SyntheticEvent<HTMLVideoElement, Event>) => {
     onLoadedData?.(event);
@@ -96,69 +46,46 @@ export function VideoWithPreview({
     const videoElement = videoRef.current;
     if (autoPlay && videoElement) {
       const playPromise = videoElement.play();
-      if (playPromise?.catch) {
-        playPromise.catch(() => {
-          setShowPreview(Boolean(resolvedPoster));
-        });
-      }
+      playPromise?.catch(() => {
+        // 자동 재생이 실패하더라도 추가 처리는 하지 않습니다.
+      });
     }
     onCanPlay?.(event);
   };
 
   const handlePlaying = (event: SyntheticEvent<HTMLVideoElement, Event>) => {
-    setShowPreview(false);
     onPlaying?.(event);
   };
 
   const handleWaiting = (event: SyntheticEvent<HTMLVideoElement, Event>) => {
-    setShowPreview(Boolean(resolvedPoster));
     onWaiting?.(event);
   };
 
   const handleStalled = (event: SyntheticEvent<HTMLVideoElement, Event>) => {
-    setShowPreview(Boolean(resolvedPoster));
     onStalled?.(event);
   };
 
   const handleError = (event: SyntheticEvent<HTMLVideoElement, Event>) => {
-    setShowPreview(Boolean(resolvedPoster));
     onError?.(event);
   };
 
   return (
-    <div className="relative h-full w-full overflow-hidden">
-      {resolvedPoster ? (
-        <img
-          aria-hidden
-          alt={previewAlt}
-          src={resolvedPoster}
-          className={cn(
-            "pointer-events-none absolute inset-0 h-full w-full object-cover transition-opacity duration-300",
-            showPreview ? "opacity-100" : "opacity-0"
-          )}
-        />
-      ) : null}
-      <video
-        ref={videoRef}
-        className={cn(
-          "relative z-10 h-full w-full object-cover transition-opacity duration-300",
-          resolvedPoster && showPreview ? "opacity-0" : "opacity-100",
-          className
-        )}
-        muted={muted}
-        loop={loop}
-        playsInline={playsInline}
-        autoPlay={autoPlay}
-        onLoadedData={handleLoadedData}
-        onCanPlay={handleCanPlay}
-        onPlaying={handlePlaying}
-        onWaiting={handleWaiting}
-        onStalled={handleStalled}
-        onError={handleError}
-        {...videoProps}
-      >
-        <source src={src} type={type} />
-      </video>
-    </div>
+    <video
+      ref={videoRef}
+      className={cn("h-full w-full object-cover", className)}
+      muted={muted}
+      loop={loop}
+      playsInline={playsInline}
+      autoPlay={autoPlay}
+      onLoadedData={handleLoadedData}
+      onCanPlay={handleCanPlay}
+      onPlaying={handlePlaying}
+      onWaiting={handleWaiting}
+      onStalled={handleStalled}
+      onError={handleError}
+      {...videoProps}
+    >
+      <source src={src} type={type} />
+    </video>
   );
 }
