@@ -149,7 +149,7 @@ export default function AdminPage() {
           </p>
         </div>
 
-        <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
           {themes.map((option) => {
             const selected = option.id === draft;
             const applied = option.id === theme.id;
