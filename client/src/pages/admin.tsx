@@ -152,30 +152,47 @@ export default function AdminPage() {
         <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {themes.map((option) => {
             const selected = option.id === draft;
+            const applied = option.id === theme.id;
+            const foreground = option.values["--foreground"] ?? "#1f2937";
+            const surface = option.values["--background"] ?? option.preview[2];
+            const primary = option.values["--primary"] ?? option.preview[0];
+            const secondary = option.values["--secondary"] ?? option.preview[1];
+
             return (
               <button
                 key={option.id}
                 type="button"
                 onClick={() => setDraft(option.id)}
+                aria-pressed={selected}
+                aria-label={option.name}
+                title={option.name}
                 className={cn(
-                  "group flex h-full flex-col overflow-hidden rounded-2xl border text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
-                  selected
-                    ? "border-primary shadow-lg ring-2 ring-primary/50"
-                    : "border-border hover:border-primary/40 hover:shadow-md"
+                  "group relative flex h-40 w-full flex-col overflow-hidden rounded-2xl border border-border transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+                  applied && "border-[3px] border-primary shadow-md",
+                  selected && !applied && "ring-2 ring-primary/40 border-primary/60",
+                  !selected && !applied && "hover:border-primary/40"
                 )}
               >
+                <span className="sr-only">{option.description}</span>
                 <div
-                  className="h-24 w-full"
+                  className="flex items-center justify-center border-b px-4 py-2 text-sm font-semibold"
                   style={{
-                    background: `linear-gradient(135deg, ${option.preview[0]}, ${option.preview[1]}, ${option.preview[2]})`,
+                    backgroundColor: surface,
+                    color: foreground,
+                    borderColor: option.values["--border"] ?? surface,
                   }}
-                />
-                <div className="flex flex-1 flex-col gap-2 p-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-base font-semibold">{option.name}</span>
-                    {selected && <span className="text-xs font-medium text-primary">선택됨</span>}
-                  </div>
-                  <p className="text-sm leading-relaxed text-muted-foreground">{option.description}</p>
+                >
+                  {option.name}
+                </div>
+                <div className="flex flex-1 flex-col">
+                  <div
+                    className="flex-1"
+                    style={{ backgroundColor: primary }}
+                  />
+                  <div
+                    className="flex-1"
+                    style={{ backgroundColor: secondary }}
+                  />
                 </div>
               </button>
             );
