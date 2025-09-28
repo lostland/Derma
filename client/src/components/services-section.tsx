@@ -168,6 +168,9 @@ export function ServicesSection() {
     const firstRealIndex = 2;
     const lastRealIndex = firstRealIndex + serviceCount - 1;
 
+    console.log("displayIndex", displayIndex );
+    console.log("firstRealIndex", displayIndex );
+      
     if (displayIndex < firstRealIndex || displayIndex > lastRealIndex) {
       setIsTransitionEnabled(false);
       const modulo = ((displayIndex - firstRealIndex) % serviceCount) + serviceCount;
@@ -240,7 +243,7 @@ export function ServicesSection() {
               transform: `translateX(${translateX}px)`,
               gap: gap ? `${gap}px` : undefined,
               padding: sidePadding ? `0 ${sidePadding}px` : undefined,
-              transitionDuration: isTransitionEnabled ? "500ms" : "0ms",
+              transitionDuration: isTransitionEnabled ? "500ms" : "500ms",
             }}
             onTransitionEnd={handleTransitionEnd}
           >
